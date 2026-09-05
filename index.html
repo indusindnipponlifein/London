@@ -345,7 +345,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--red-signal);ou
       <a class="dl-btn" id="dl1" href="#" target="_blank" rel="noopener">CEO's Note</a>
       <a class="dl-btn" id="dl2" href="#" target="_blank" rel="noopener">Travel Tickets</a>
       <a class="dl-btn" id="dl3" href="#" target="_blank" rel="noopener">Convention Itinery</a>
-      <a class="dl-btn" id="dl4" href="#" target="_blank" rel="noopener">Document 4</a>
+      <a class="dl-btn" id="dl4" href="#" target="_blank" rel="noopener">Accommodation Details</a>
     </div>
   </section>
 
@@ -364,7 +364,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--red-signal);ou
 const API_URL="https://script.google.com/macros/s/AKfycbyEda91TPI9tNMYizYfTcgnRpNb1UvSzMyWfbdHIIhBW8OLQ6oUz-AMrZizOXPbxn8/exec";
 
 // TODO: confirm this against the poster (it currently reads November 2026)
-const CONVENTION_DATE=new Date("2026-09-20T00:00:00");
+const CONVENTION_DATE=new Date("2026-11-10T00:00:00");
 
 function getDaysRemaining(){
   const now=new Date();
@@ -451,7 +451,7 @@ async function searchDoc(){
 
     if(data.status==="success"){
       msg.className="success";
-      msg.innerHTML="Details found! Your files are ready below.";
+      msg.innerHTML="Your personalised convention documents are ready.";
 
       document.getElementById("dl1").href=data.f1;
       document.getElementById("dl2").href=data.f2;
@@ -492,14 +492,14 @@ const messagesTomorrow=[
   "✈️ Almost wheels up for London!"
 ];
 const messagesToday=[
-  "🎆 Today's the day — see you in London!",
+  "🎆 Today's the day - see you in London!",
   "🥳 It's happening! London, here we come!",
-  "🕰️ Big Ben's ready — are you?"
+  "🕰️ Big Ben's ready - are you?"
 ];
 const messagesPast=[
   "🎉 Hope London was unforgettable!",
   "📸 Thanks for making it a night to remember!",
-  "🥂 Until the next convention — cheers!"
+  "🥂 Until the next convention - cheers!"
 ];
 
 function pickBadgeMessage(){
