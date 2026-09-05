@@ -279,6 +279,13 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--red-signal);ou
 .popup-box iframe{
   width:100%;height:55vh;border:none;border-radius:10px;background:#f2f2f2;
 }
+/* the announcement image: object-fit:contain + max-height means the
+   whole image always scales down to fit inside the frame — never
+   cropped, never requiring a scroll to see the rest of it */
+.popup-box img{
+  display:block;width:auto;height:auto;max-width:100%;max-height:70vh;
+  margin:0 auto;border-radius:10px;background:#f2f2f2;object-fit:contain;
+}
 .popup-cancel{
   align-self:center;padding:10px 30px;border:none;border-radius:8px;cursor:pointer;
   background:linear-gradient(135deg, var(--navy-deep), #08182B);color:var(--gold-light);
@@ -290,6 +297,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--red-signal);ou
   .page{padding-top:27vh;}
   .card{padding:24px 20px;}
   .popup-box iframe{height:48vh;}
+  .popup-box img{max-height:55vh;}
 }
 
 @media (max-height:700px){
@@ -346,6 +354,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--red-signal);ou
 
 <div class="popup-overlay" id="popupOverlay" onclick="if(event.target===this)closePopup()">
   <div class="popup-box">
+    <img id="popupImage" alt="Announcement" style="display:none;">
     <iframe id="popupFrame" src="" title="Notice"></iframe>
     <button class="popup-cancel" onclick="closePopup()">Cancel</button>
   </div>
@@ -380,6 +389,15 @@ function updateCountdown(){
 function closePopup(){
   document.getElementById("popupOverlay").classList.remove("show");
   document.getElementById("popupFrame").src="";
+  document.getElementById("popupImage").src="";
+}
+
+/* Announcements can be a plain image (a flyer/banner) or a page/PDF
+   link. Images are rendered as <img> with object-fit:contain so the
+   whole thing always scales to fit inside the popup at once; anything
+   else falls back to the iframe as before. */
+function isImageUrl(url){
+  return /\.(png|jpe?g|gif|webp|bmp|svg)(\?.*)?$/i.test(url);
 }
 
 async function showGeneralPopup(){
@@ -387,7 +405,19 @@ async function showGeneralPopup(){
     const response=await fetch(API_URL+"?action=popup");
     const data=await response.json();
     if(data.status==="success" && data.popup){
-      document.getElementById("popupFrame").src=data.popup;
+      const img=document.getElementById("popupImage");
+      const frame=document.getElementById("popupFrame");
+      if(isImageUrl(data.popup)){
+        frame.src="";
+        frame.style.display="none";
+        img.style.display="block";
+        img.src=data.popup;
+      }else{
+        img.src="";
+        img.style.display="none";
+        frame.style.display="block";
+        frame.src=data.popup;
+      }
       document.getElementById("popupOverlay").classList.add("show");
     }
   }catch(err){
