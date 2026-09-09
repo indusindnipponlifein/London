@@ -10,26 +10,42 @@
 <style>
 :root{
   --navy-deep:#0F2A4A;
-  --navy-night:#050D1A;
+  --navy-night:#02081C;   /* sampled directly from the poster's own bottom-edge navy */
+  --navy-glow:#051642;    /* sampled from the poster's brightest mid-height navy glow */
   --red-error:#FF6E7C;
   --ink:#10202E;
   --white:#FFFFFF;
   --success:#3FDC9B;
-  --gold-deep:#B8862E;  /* sampled directly from the poster's "2026" shadow tone */
-  --gold:#E3B54F;       /* sampled from the poster's mid-tone gold */
-  --gold-light:#F6DFA0; /* sampled from the poster's highlight gold */
+  --gold-deep:#B8862E;    /* sampled from the poster's skyline shadow gold */
+  --gold:#DDAE4E;         /* close to the poster's mid-tone gold, nudged for UI legibility */
+  --gold-light:#F6DFA0;   /* synthetic highlight tint for text, in the same gold family */
   --font-body:'IBM Plex Sans', -apple-system, 'Segoe UI', sans-serif;
   --font-display:'Cinzel', Georgia, serif;
 
   /* ==========================================================
-     POSTER BACKGROUND — this is the only line you need to touch.
-     Right now it points at the local file sitting next to this
-     HTML file. Once you have your final hosted image link, just
-     replace the url() below with it, e.g.:
+     POSTER BACKGROUND — the only line you should need to touch.
+     Swap the url() below for your final hosted image link, e.g.:
      --hero-bg-image: url('https://yourdomain.com/poster.jpg');
      ========================================================== */
   --hero-bg-image: url('https://iili.io/nF0X6ZB.png');
+
+  /* ---- Measured, not guessed, from the actual poster file:
+     it is 1364 x 2395px (h/w = 1.75587), and every pixel below
+     42.6% of its height is empty navy + decorative stars — the
+     logo/skyline/"LONDON"/"2026" artwork never extends past that
+     line. --safe-fraction adds a small breathing margin above
+     that measured line. Both --safe-y below, and the readability
+     scrim on .bg-overlay, are driven from this ONE value, so the
+     "where the poster ends" and "where content may start" can
+     never drift apart on any viewport. ---- */
+  --poster-ar: 1.75587;
+  --safe-fraction: 0.45;
+  --safe-y: calc(min(calc(100vw * var(--poster-ar)), 100vh) * var(--safe-fraction));
 }
+@supports (height:100dvh){
+  :root{ --safe-y: calc(min(calc(100vw * var(--poster-ar)), 100dvh) * var(--safe-fraction)); }
+}
+
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;}
 
@@ -41,31 +57,46 @@ body{
   background-color:var(--navy-night);
 }
 
-/* ---- The poster now lives in its OWN fixed, viewport-sized layer
-   instead of being a body background with background-attachment:fixed.
-   That property is unreliable on mobile browsers — when the page's
-   scrollable content grows taller (e.g. the download buttons appear),
-   some mobile browsers recompute the "fixed" background against the
-   new, taller document instead of the viewport, which is exactly what
-   was pushing the poster (and the countdown sitting on it) upward.
-   A position:fixed; inset:0 element is sized purely by the viewport,
-   never by page content, so its size and position can't drift no
-   matter how tall the card below gets. ---- */
+/* ---- The poster lives in its own fixed, viewport-sized layer so its
+   size/position can never drift as the card below grows or shrinks
+   (background-attachment:fixed on <body> is unreliable for exactly
+   that reason on mobile browsers).
+
+   Two background layers are stacked here:
+   1) the poster artwork itself, always shown in full via `contain`
+      so it is NEVER cropped or distorted, anchored to the top since
+      that's where all its content lives;
+   2) underneath it, a vertical gradient built from colours actually
+      sampled from the poster's own navy glow. On any viewport wider
+      than the poster's own ratio, `contain` letterboxes the sides —
+      instead of exposing a flat, mismatched fill there, the exposed
+      strip continues the poster's real lighting. ---- */
 .hero-bg{
   position:fixed;inset:0;z-index:0;pointer-events:none;
-  background-image:var(--hero-bg-image);
-  background-size:contain;
-  background-position:top center;
-  background-repeat:no-repeat;
-  background-color:var(--navy-night);
+  background-image:
+    var(--hero-bg-image),
+    linear-gradient(180deg,
+      #010715 0%, #030d27 10%, #031134 20%, #04163e 30%,
+      var(--navy-glow) 40%, #04143f 50%, #031337 60%,
+      #030d28 70%, #02091c 80%, #01050e 90%, #000000 100%);
+  background-size: contain, 100% 100%;
+  background-position: top center, center;
+  background-repeat: no-repeat, no-repeat;
+  background-color: var(--navy-night);
 }
 
-/* a soft vignette ON the poster (not a second background) purely to
-   keep the gold text and glass card readable against the artwork */
+/* a soft readability scrim ON the poster, synced to --safe-y so the
+   darkened band always begins exactly where the content begins,
+   regardless of viewport size or shape */
 .bg-overlay{
   position:fixed;inset:0;z-index:1;pointer-events:none;
   background:
-    linear-gradient(180deg, rgba(2,5,9,.22) 0%, rgba(2,5,9,0) 22%, rgba(2,5,9,0) 62%, rgba(2,5,9,.5) 100%);
+    linear-gradient(180deg,
+      rgba(2,5,9,.14) 0%,
+      rgba(2,5,9,0) 16%,
+      rgba(2,5,9,0) calc(var(--safe-y) - 70px),
+      rgba(2,5,9,.55) calc(var(--safe-y) + 10px),
+      rgba(2,5,9,.6) 100%);
 }
 
 .sr-only{
@@ -73,7 +104,7 @@ body{
   clip:rect(0,0,0,0);white-space:nowrap;border:0;
 }
 
-/* celebratory confetti, one burst on load */
+/* celebratory confetti, one gentle burst on load */
 .confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:5;}
 .confetti span{position:absolute;top:-8%;width:7px;height:13px;opacity:0;border-radius:1px;animation:confettiFall 3.4s ease-in forwards;}
 @keyframes confettiFall{0%{transform:translateY(0) rotate(0deg);opacity:1;}85%{opacity:1;}100%{transform:translateY(72vh) rotate(340deg);opacity:0;}}
@@ -92,97 +123,33 @@ body{
 .confetti span:nth-child(13){left:50%;background:var(--gold);animation-delay:.60s;}
 .confetti span:nth-child(14){left:18%;background:var(--white);animation-delay:.40s;}
 
-/* ---- CONTENT — everything sits in one column over the fixed poster,
-   starting right where the artwork's own "CONVENTION NOVEMBER 2026"
-   line ends and flowing down from there. Because .hero-bg is now its
-   own fixed, viewport-only layer (see above), this padding-top will
-   always land the countdown in the same spot on the poster, no matter
-   how the card below grows or shrinks. ---- */
+/* ---- CONTENT — one column, sitting inside the poster's own measured
+   negative space. --safe-y guarantees the first item here never
+   overlaps the artwork, on any device. ---- */
 .page{
   position:relative;z-index:2;
   min-height:100vh;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  padding:85vw 24px 48px;
+  display:flex;flex-direction:column;align-items:center;
+  padding: var(--safe-y) 24px 40px;
   text-align:center;
 }
-@media (min-aspect-ratio: 1364/2395){
-  .page{padding-top:48vh;}
-}
+@supports (height:100dvh){ .page{min-height:100dvh;} }
 
-/* ---- Countdown: three glass stat tiles (days / hours / minutes)
-   instead of a single pill, so the number itself is the hero moment
-   rather than a caption. When the date has passed, the tiles are
-   swapped for a single message pill instead. ---- */
-.countdown-wrap{animation:rise .7s ease both;}
-.countdown-label{
-  font-family:var(--font-display);font-weight:600;font-size:.7rem;letter-spacing:.24em;text-transform:uppercase;
-  color:var(--gold-light);opacity:.9;margin-bottom:12px;text-shadow:0 2px 8px rgba(2,5,9,.65);
-}
-.countdown-stats{display:flex;align-items:center;justify-content:center;gap:9px;}
-.stat-box{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  width:66px;height:66px;border-radius:15px;
-  background:
-    linear-gradient(165deg, rgba(255,255,255,.15), rgba(255,255,255,.03) 40%, transparent 70%),
-    linear-gradient(180deg, rgba(17,36,60,.55), rgba(6,14,26,.8));
-  backdrop-filter:blur(16px) saturate(170%);
-  -webkit-backdrop-filter:blur(16px) saturate(170%);
-  border:1px solid rgba(227,181,79,.5);
-  box-shadow:0 10px 22px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.14);
-}
-.stat-num{
-  font-family:var(--font-display);font-weight:700;font-size:1.55rem;line-height:1;color:var(--gold-light);
-  text-shadow:0 2px 8px rgba(2,5,9,.5);
-  font-variant-numeric:tabular-nums;
-}
-.stat-label{
-  margin-top:5px;font-family:var(--font-body);font-weight:600;font-size:.6rem;letter-spacing:.1em;
-  color:rgba(246,223,160,.75);
-}
-.stat-sep{font-family:var(--font-display);font-weight:600;color:rgba(227,181,79,.5);font-size:1.25rem;}
-.countdown-done{
-  display:inline-flex;align-items:center;gap:10px;
-  background:linear-gradient(135deg, rgba(17,36,60,.62), rgba(6,14,26,.78));
-  backdrop-filter:blur(14px) saturate(160%);
-  -webkit-backdrop-filter:blur(14px) saturate(160%);
-  color:var(--gold-light);font-family:var(--font-display);font-weight:600;font-size:.92rem;letter-spacing:.1em;
-  padding:11px 26px;border-radius:999px;border:1px solid rgba(227,181,79,.55);
-  box-shadow:0 10px 26px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.14);
-}
-.countdown-done::before{
-  content:"";width:6px;height:6px;border-radius:50%;
-  background:var(--gold-light);box-shadow:0 0 8px 2px rgba(246,223,160,.8);
-  flex-shrink:0;
-}
-
-.subcopy{
-  font-family:var(--font-body);font-size:.95rem;line-height:1.6;color:var(--gold-light);
-  max-width:320px;margin:18px auto 0;text-shadow:0 2px 10px rgba(2,5,9,.7);
-  animation:rise .8s .1s ease both;
-}
-
-/* Two typographic motifs lifted straight from the poster itself, so the
-   card reads as a continuation of the artwork rather than a bolted-on
-   app panel: a hairline rule flanking a small gold diamond either side
-   of a short caption (matching "◆ 2026 ◆"), and a plainer rule-flanked
-   caption with no diamonds (matching "— TRAINING CONVENTION —"). */
-.divider-gem, .divider-plain{
-  display:flex;align-items:center;justify-content:center;gap:10px;
-  font-family:var(--font-display);text-transform:uppercase;font-weight:600;
+/* the first thing a qualified employee reads: short, confident,
+   sitting directly on the poster rather than in an opaque block */
+.hero-welcome{
+  font-family:var(--font-display);font-weight:600;
+  font-size:1.15rem;line-height:1.4;letter-spacing:.01em;
   color:var(--gold-light);
+  max-width:290px;margin:0 auto 24px;
+  text-shadow:0 2px 12px rgba(2,5,9,.75);
+  animation:rise .7s ease both;
 }
-.divider-gem{font-size:.68rem;letter-spacing:.22em;margin:0 0 18px;opacity:.95;}
-.divider-gem::before,.divider-gem::after{content:"";width:20px;height:1px;background:rgba(227,181,79,.55);}
-.divider-gem .gem{color:var(--gold);font-size:.55rem;}
-.divider-plain{font-size:.8rem;letter-spacing:.16em;}
-.divider-plain::before,.divider-plain::after{content:"";width:26px;height:1px;background:rgba(227,181,79,.55);}
+@media (min-width:420px){ .hero-welcome{font-size:1.3rem;} }
 
 /* the entry card — a frosted glass panel, layered like real glass:
    a faint gradient sheen, blur, a soft gold edge, and a thin
-   specular highlight along the top so it reads as premium, not just
-   "translucent rectangle" */
+   specular highlight along the top */
 .card{
   position:relative;z-index:1;width:100%;
   background:
@@ -192,10 +159,10 @@ body{
   -webkit-backdrop-filter:blur(24px) saturate(170%);
   border:1px solid rgba(227,181,79,.32);
   border-radius:20px;
-  padding:34px 28px;
-  margin:26px auto 0;max-width:360px;text-align:center;
+  padding:32px 26px;
+  margin:0 auto;max-width:360px;text-align:center;
   box-shadow:0 28px 60px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.1), inset 0 -1px 0 rgba(0,0,0,.25);
-  animation:rise .9s .2s ease both;
+  animation:rise .9s .1s ease both;
 }
 .card::before{
   content:"";position:absolute;top:0;left:14%;right:14%;height:1px;
@@ -207,11 +174,10 @@ body{
   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
   border:1.5px solid rgba(227,181,79,.6);display:flex;align-items:center;justify-content:center;
   font-size:22px;box-shadow:0 8px 20px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.15);
-  animation:badgeIn .5s .8s cubic-bezier(.34,1.56,.64,1) both;
+  animation:badgeIn .5s .7s cubic-bezier(.34,1.56,.64,1) both;
   cursor:pointer;appearance:none;-webkit-appearance:none;padding:0;
   transition:transform .15s ease;
 }
-.badge::after{content:none;}
 .badge:hover{transform:scale(1.08);}
 .badge:active{transform:scale(.94);}
 @keyframes badgeIn{0%{transform:scale(0);opacity:0;}100%{transform:scale(1);opacity:1;}}
@@ -229,6 +195,28 @@ body{
   opacity:0;transition:opacity .35s ease, transform .35s ease;
 }
 .toast.show{opacity:1;transform:translate(-50%,0);}
+
+/* two typographic motifs lifted straight from the poster itself, so
+   the card reads as a continuation of the artwork: a hairline rule
+   flanking a gold diamond either side of a caption (matching the
+   poster's own "◆ 2026 ◆"), and a plainer rule (matching its
+   "— TRAINING CONVENTION —") */
+.divider-gem, .divider-plain{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  font-family:var(--font-display);text-transform:uppercase;font-weight:600;
+  color:var(--gold-light);
+}
+.divider-gem{font-size:.68rem;letter-spacing:.22em;margin:0 0 10px;opacity:.95;}
+.divider-gem::before,.divider-gem::after{content:"";width:20px;height:1px;background:rgba(227,181,79,.55);}
+.divider-gem .gem{color:var(--gold);font-size:.55rem;}
+.divider-plain{font-size:.8rem;letter-spacing:.16em;}
+.divider-plain::before,.divider-plain::after{content:"";width:26px;height:1px;background:rgba(227,181,79,.55);}
+
+.card-instruction{
+  font-family:var(--font-body);font-size:.85rem;line-height:1.55;
+  color:rgba(246,223,160,.72);
+  max-width:270px;margin:0 auto 22px;
+}
 
 .input-wrap{
   padding:1px;border-radius:13px;margin-bottom:18px;
@@ -253,7 +241,7 @@ button{
   color:var(--gold-light);
   font-family:var(--font-body);font-weight:600;font-size:15px;letter-spacing:.1em;text-transform:uppercase;
   box-shadow:0 14px 30px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.1);
-  transition:transform .2s ease, box-shadow .2s ease;
+  transition:transform .2s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
 }
 button::after{
   content:"";position:absolute;top:0;left:-60%;width:35%;height:100%;
@@ -265,6 +253,15 @@ button:hover{transform:translateY(-2px);box-shadow:0 18px 38px rgba(15,42,74,.5)
 button:active{transform:translateY(0);}
 button:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none;}
 button:focus-visible, input:focus-visible{outline:2px solid var(--gold-light);outline-offset:2px;}
+
+/* the button's calm "done" state after a successful lookup — a
+   distinct, confirmed look, not just a greyed-out disabled control */
+button#btn.success-state{
+  border-color:rgba(63,220,155,.55);
+  background:linear-gradient(135deg, rgba(63,220,155,.16), rgba(5,13,26,.96));
+}
+button#btn.success-state::after{display:none;}
+button#btn:disabled.success-state{opacity:1;cursor:default;}
 
 .loader{
   display:none;margin-top:16px;align-items:center;justify-content:center;gap:8px;
@@ -281,46 +278,111 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--gold-light);ou
 .success{color:var(--success);}
 .error{color:var(--red-error);}
 
-/* the 4 pdf download buttons, revealed after a successful lookup.
-   Any button whose key is set to false in DOC_AVAILABILITY (see the
-   script) renders in a locked "Coming Soon" state instead. */
-.downloads{
-  display:none;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px;
+/* the document hub — revealed after a successful lookup. Available
+   documents render as full rows (icon, title, description); anything
+   still unavailable is summarised in a single plain sentence instead
+   of several separate "broken-looking" tiles, and that sentence
+   simply disappears once nothing is left pending. */
+.downloads{display:none;margin-top:20px;}
+.downloads.show{display:block;}
+.docs-list{display:flex;flex-direction:column;gap:10px;text-align:left;}
+
+.doc-row{
+  display:flex;align-items:center;gap:12px;
+  padding:13px 14px;border-radius:13px;text-decoration:none;
+  background:linear-gradient(135deg, rgba(227,181,79,.30), rgba(184,134,46,.16));
+  border:1px solid rgba(227,181,79,.46);
+  backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);
+  box-shadow:0 8px 18px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.1);
+  transition:transform .2s ease, box-shadow .2s ease, background .2s ease;
+  color:var(--gold-light);
 }
-.downloads.show{display:grid;}
-.dl-btn{
-  display:flex;align-items:center;justify-content:center;gap:7px;text-align:left;padding:13px 10px;border-radius:12px;
-  background:linear-gradient(135deg, rgba(227,181,79,.34), rgba(184,134,46,.2));
+.doc-row:hover, .doc-row:focus-visible{
+  transform:translateY(-2px);
+  background:linear-gradient(135deg, rgba(227,181,79,.42), rgba(184,134,46,.22));
+  box-shadow:0 12px 22px rgba(184,134,46,.28), inset 0 1px 0 rgba(255,255,255,.18);
+}
+.doc-icon{
+  flex-shrink:0;width:34px;height:34px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(9,20,35,.5);border:1px solid rgba(227,181,79,.4);
+}
+.doc-icon svg{width:16px;height:16px;}
+.doc-text{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;}
+.doc-title{font-weight:600;font-size:14px;}
+.doc-desc{font-size:12px;color:rgba(246,223,160,.68);line-height:1.35;}
+.doc-chevron{flex-shrink:0;width:14px;height:14px;opacity:.7;}
+
+.doc-pending{
+  display:flex;align-items:flex-start;gap:10px;text-align:left;
+  padding:12px 14px;border-radius:13px;
+  background:rgba(9,20,35,.35);
+  border:1px solid rgba(227,181,79,.18);
+}
+.doc-pending .doc-icon{background:rgba(9,20,35,.4);border-color:rgba(227,181,79,.22);opacity:.75;}
+.doc-pending span:last-child{font-size:12.5px;line-height:1.55;color:rgba(246,223,160,.62);padding-top:6px;}
+
+/* the quiet escape hatch after a successful lookup, in case the
+   employee wants to check a different ID on a shared device */
+.reset-link{
+  margin-top:18px;background:none;border:none;box-shadow:none;padding:0;width:auto;
+  font-family:var(--font-body);font-size:12.5px;font-weight:500;letter-spacing:normal;text-transform:none;
+  color:rgba(246,223,160,.62);text-decoration:underline;text-decoration-color:rgba(227,181,79,.4);
+  cursor:pointer;
+}
+.reset-link:hover{color:var(--gold-light);}
+.reset-link:focus-visible{outline:2px solid var(--gold-light);outline-offset:3px;}
+.reset-link[hidden]{display:none;}
+
+/* the countdown — deliberately secondary now: it sits after the
+   lookup card, quieter and smaller, as supporting information rather
+   than the page's first or largest moment. */
+.countdown-wrap{margin-top:32px;opacity:.92;animation:rise .7s ease both;}
+.countdown-label{
+  font-family:var(--font-display);font-weight:600;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--gold-light);opacity:.85;margin-bottom:10px;text-shadow:0 2px 8px rgba(2,5,9,.65);
+}
+.countdown-stats{display:flex;align-items:center;justify-content:center;gap:8px;}
+.stat-box{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  width:50px;height:50px;border-radius:12px;
+  background:
+    linear-gradient(165deg, rgba(255,255,255,.15), rgba(255,255,255,.03) 40%, transparent 70%),
+    linear-gradient(180deg, rgba(17,36,60,.55), rgba(6,14,26,.8));
+  backdrop-filter:blur(16px) saturate(170%);
+  -webkit-backdrop-filter:blur(16px) saturate(170%);
+  border:1px solid rgba(227,181,79,.5);
+  box-shadow:0 10px 22px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.14);
+}
+.stat-num{
+  font-family:var(--font-display);font-weight:700;font-size:1.15rem;line-height:1;color:var(--gold-light);
+  text-shadow:0 2px 8px rgba(2,5,9,.5);
+  font-variant-numeric:tabular-nums;
+}
+.stat-label{
+  margin-top:4px;font-family:var(--font-body);font-weight:600;font-size:.52rem;letter-spacing:.1em;
+  color:rgba(246,223,160,.75);
+}
+.stat-sep{font-family:var(--font-display);font-weight:600;color:rgba(227,181,79,.5);font-size:1rem;}
+.countdown-done{
+  display:inline-flex;align-items:center;gap:10px;
+  background:linear-gradient(135deg, rgba(17,36,60,.62), rgba(6,14,26,.78));
   backdrop-filter:blur(14px) saturate(160%);
   -webkit-backdrop-filter:blur(14px) saturate(160%);
-  color:var(--gold-light);font-weight:600;font-size:13.5px;text-decoration:none;
-  border:1px solid rgba(227,181,79,.5);
-  box-shadow:0 8px 18px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.12);
-  transition:transform .2s ease, box-shadow .2s ease, background .2s ease, opacity .2s ease, filter .2s ease;
+  color:var(--gold-light);font-family:var(--font-display);font-weight:600;font-size:.85rem;letter-spacing:.08em;
+  padding:10px 22px;border-radius:999px;border:1px solid rgba(227,181,79,.55);
+  box-shadow:0 10px 26px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.14);
 }
-.dl-btn:hover, .dl-btn:focus-visible{
-  transform:translateY(-2px);
-  background:linear-gradient(135deg, rgba(227,181,79,.46), rgba(184,134,46,.28));
-  box-shadow:0 12px 24px rgba(184,134,46,.3), inset 0 1px 0 rgba(255,255,255,.2);
+.countdown-done::before{
+  content:"";width:6px;height:6px;border-radius:50%;
+  background:var(--gold-light);box-shadow:0 0 8px 2px rgba(246,223,160,.8);
+  flex-shrink:0;
 }
-.dl-btn svg{flex-shrink:0;width:14px;height:14px;}
-.dl-text{display:flex;flex-direction:column;line-height:1.3;}
-.soon-tag{
-  display:none;margin-top:1px;font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;
-  font-weight:600;color:rgba(246,223,160,.7);
-}
-.dl-btn.disabled{
-  opacity:.5;filter:grayscale(.4);cursor:not-allowed;pointer-events:none;
-  transform:none;box-shadow:none;
-}
-.dl-btn.disabled:hover{transform:none;}
-.dl-btn.disabled .soon-tag{display:block;}
 
-/* closing line — a true page footer. margin-top:auto pushes it to the
-   bottom of .page's flex column: on short content it sits pinned to
-   the bottom of the viewport, on tall content it settles at the very
-   end of the scrollable page — either way, always the last thing on
-   the page, never mid-card. */
+/* closing line — margin-top:auto pushes it to the bottom of .page's
+   flex column: on short content it pins to the viewport bottom, on
+   tall content it settles at the end of the scrollable page — either
+   way, always last, never mid-flow. */
 .footer-note{
   margin-top:auto;
   padding-top:28px;
@@ -329,8 +391,12 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--gold-light);ou
 
 @keyframes rise{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
 
-/* general announcement popup - opens automatically on page load,
-   closed via the corner × button, backdrop tap, or Escape */
+/* general announcement popup — opens automatically on page load,
+   closed via the corner × button, backdrop tap, or Escape. The outer
+   frame now matches the site's own navy/gold glass language instead
+   of a generic white browser modal; a light inner "paper" well hosts
+   the actual announcement image/page so arbitrary assets stay legible
+   regardless of their own background. */
 .popup-overlay{
   display:none;position:fixed;inset:0;z-index:50;align-items:center;justify-content:center;
   background:rgba(2,5,9,.78);padding:20px;
@@ -338,10 +404,15 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--gold-light);ou
 .popup-overlay.show{display:flex;}
 .popup-box{
   position:relative;
-  background:#fff;border-radius:16px;padding:18px;max-width:480px;width:100%;
-  max-height:85vh;display:flex;flex-direction:column;gap:14px;
-  box-shadow:0 30px 60px rgba(0,0,0,.5);
+  background:
+    linear-gradient(165deg, rgba(255,255,255,.09), rgba(255,255,255,.02) 35%, transparent 60%),
+    linear-gradient(180deg, rgba(17,36,60,.92), rgba(6,14,26,.96));
+  border:1px solid rgba(227,181,79,.4);
+  border-radius:20px;padding:22px 18px 18px;max-width:480px;width:100%;
+  max-height:85vh;display:flex;flex-direction:column;gap:12px;
+  box-shadow:0 30px 60px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.1);
 }
+.popup-eyebrow{margin:0;font-size:.64rem;}
 .popup-close{
   position:absolute;top:-14px;right:-14px;width:34px;height:34px;border-radius:50%;
   border:1px solid rgba(227,181,79,.65);cursor:pointer;
@@ -350,26 +421,42 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--gold-light);ou
   box-shadow:0 8px 20px rgba(0,0,0,.4);
 }
 .popup-close:hover{opacity:.9;}
+.popup-well{
+  background:#fff;border-radius:12px;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;padding:8px;
+}
 .popup-loading{
-  display:flex;align-items:center;justify-content:center;gap:8px;padding:40px 0;
+  display:flex;align-items:center;justify-content:center;gap:8px;padding:40px 12px;
   font-family:var(--font-body);font-size:14px;color:var(--ink);
 }
 .popup-loading .spinner{border-color:rgba(15,42,74,.2);border-top-color:var(--navy-deep);}
-.popup-box iframe{
-  width:100%;height:55vh;border:none;border-radius:10px;background:#f2f2f2;
+.popup-well iframe{
+  width:100%;height:55vh;border:none;border-radius:8px;background:#f2f2f2;
 }
-/* the announcement image: object-fit:contain + max-height means the
-   whole image always scales down to fit inside the frame — never
-   cropped, never requiring a scroll to see the rest of it */
-.popup-box img{
+/* object-fit:contain + max-height means the whole announcement image
+   always scales down to fit inside the frame — never cropped, never
+   requiring a scroll to see the rest of it */
+.popup-well img{
   display:block;width:auto;height:auto;max-width:100%;max-height:70vh;
-  margin:0 auto;border-radius:10px;background:#f2f2f2;object-fit:contain;
+  border-radius:8px;background:#f2f2f2;object-fit:contain;
 }
 
 @media (max-width:480px){
-  .card{padding:24px 20px;}
-  .popup-box iframe{height:48vh;}
-  .popup-box img{max-height:55vh;}
+  .card{padding:26px 20px;}
+  .popup-well iframe{height:48vh;}
+  .popup-well img{max-height:55vh;}
+}
+
+/* ---- Landscape / very short viewports (e.g. a phone turned
+   sideways): pinning the poster to the full viewport height would
+   squeeze all card content into a sliver. Instead the poster becomes
+   a normal, capped-height element at the top of the page (still
+   shown in full via `contain`, never cropped — just smaller and
+   letterboxed), and everything below it flows and scrolls normally. ---- */
+@media (orientation:landscape) and (max-height:500px){
+  .hero-bg{position:absolute;inset:auto;top:0;left:0;right:0;height:62vh;}
+  .bg-overlay{display:none;}
+  .page{padding-top:calc(62vh + 18px);}
 }
 
 @media (prefers-reduced-motion: reduce){
@@ -387,27 +474,19 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--gold-light);ou
   <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
 </div>
 
-<h1 class="sr-only">London Training Convention — November 2026 — IndusInd Nippon Life</h1>
+<h1 class="sr-only">London Training Convention — 2026 — IndusInd Nippon Life</h1>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <main class="page">
-  <div class="countdown-wrap" id="countdownWrap">
-    <p class="countdown-label" id="countdownLabel">Counting Down To London 2026</p>
-    <div class="countdown-stats" id="countdownStats" role="status" aria-live="polite">
-      <div class="stat-box"><span class="stat-num" id="cdDays">--</span><span class="stat-label">Days</span></div>
-      <span class="stat-sep" aria-hidden="true">:</span>
-      <div class="stat-box"><span class="stat-num" id="cdHours">--</span><span class="stat-label">Hrs</span></div>
-      <span class="stat-sep" aria-hidden="true">:</span>
-      <div class="stat-box"><span class="stat-num" id="cdMins">--</span><span class="stat-label">Mins</span></div>
-    </div>
-  </div>
-  <p class="subcopy">Enter your registered details below to access your personalised convention documents</p>
+
+  <p class="hero-welcome">Your seat in London is confirmed.</p>
 
   <section class="card">
     <button type="button" class="badge" id="celebrateBadge" aria-label="Tap for a surprise" onclick="celebrateBadge(event)">🎉</button>
 
-    <p class="divider-gem" aria-hidden="true"><span class="gem">◆</span><span>Your Details</span><span class="gem">◆</span></p>
+    <p class="divider-gem" aria-hidden="true"><span class="gem">◆</span><span>Your Documents</span><span class="gem">◆</span></p>
+    <p class="card-instruction">Enter your registered Employee ID or Mobile Number to access them.</p>
 
     <form id="lookupForm" novalidate>
       <label for="input" class="sr-only">Employee ID or Mobile Number</label>
@@ -431,24 +510,22 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--gold-light);ou
     <div id="msg" role="status" aria-live="polite"></div>
 
     <div class="downloads" id="downloads">
-      <a class="dl-btn" id="dl1" data-key="f1" href="#" target="_blank" rel="noopener">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 1.8h5.2L12 4.6v9.6H4z"/><path d="M9.2 1.8v2.8H12"/><path d="M6 8.4h4M6 10.6h4"/></svg>
-        <span class="dl-text"><span class="dl-label">CEO's Note</span><span class="soon-tag">Coming Soon</span></span>
-      </a>
-      <a class="dl-btn" id="dl2" data-key="f2" href="#" target="_blank" rel="noopener">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 1.5 1.7 6.4l4.2 1.6"/><path d="M14.5 1.5 9.6 14.3l-3.7-6.3 8.6-6.5z"/></svg>
-        <span class="dl-text"><span class="dl-label">Travel Tickets</span><span class="soon-tag">Coming Soon</span></span>
-      </a>
-      <a class="dl-btn" id="dl3" data-key="f3" href="#" target="_blank" rel="noopener">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="12" height="11" rx="1.3"/><path d="M2 6.4h12"/><path d="M5.4 1.6v2.4M10.6 1.6v2.4"/></svg>
-        <span class="dl-text"><span class="dl-label">Itinerary</span><span class="soon-tag">Coming Soon</span></span>
-      </a>
-      <a class="dl-btn" id="dl4" data-key="f4" href="#" target="_blank" rel="noopener">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.6 13V4.4"/><path d="M1.6 10.4h12.8v2.6"/><path d="M3.8 10.4V6.8h6.8a1.8 1.8 0 0 1 1.8 1.8v1.8"/></svg>
-        <span class="dl-text"><span class="dl-label">Accommodation</span><span class="soon-tag">Coming Soon</span></span>
-      </a>
+      <div class="docs-list" id="docsList"></div>
     </div>
+
+    <button type="button" class="reset-link" id="resetLink" hidden>Search a different ID</button>
   </section>
+
+  <div class="countdown-wrap" id="countdownWrap">
+    <p class="countdown-label" id="countdownLabel">Counting Down To London 2026</p>
+    <div class="countdown-stats" id="countdownStats" role="status" aria-live="polite">
+      <div class="stat-box"><span class="stat-num" id="cdDays">--</span><span class="stat-label">Days</span></div>
+      <span class="stat-sep" aria-hidden="true">:</span>
+      <div class="stat-box"><span class="stat-num" id="cdHours">--</span><span class="stat-label">Hrs</span></div>
+      <span class="stat-sep" aria-hidden="true">:</span>
+      <div class="stat-box"><span class="stat-num" id="cdMins">--</span><span class="stat-label">Mins</span></div>
+    </div>
+  </div>
 
   <p class="footer-note divider-plain">See You In London</p>
 </main>
@@ -456,9 +533,12 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--gold-light);ou
 <div class="popup-overlay" id="popupOverlay" role="dialog" aria-modal="true" aria-label="Announcement" onclick="if(event.target===this)closePopup()">
   <div class="popup-box">
     <button type="button" class="popup-close" onclick="closePopup()" aria-label="Close announcement">✕</button>
-    <div class="popup-loading" id="popupLoading"><span class="spinner"></span><span>Loading announcement...</span></div>
-    <img id="popupImage" alt="Announcement" style="display:none;">
-    <iframe id="popupFrame" src="" title="Notice" style="display:none;"></iframe>
+    <p class="divider-gem popup-eyebrow" aria-hidden="true"><span class="gem">◆</span><span>Announcement</span><span class="gem">◆</span></p>
+    <div class="popup-well">
+      <div class="popup-loading" id="popupLoading"><span class="spinner"></span><span>Loading announcement...</span></div>
+      <img id="popupImage" alt="Announcement" style="display:none;">
+      <iframe id="popupFrame" src="" title="Notice" style="display:none;"></iframe>
+    </div>
   </div>
 </div>
 
@@ -469,10 +549,10 @@ const API_URL="https://script.google.com/macros/s/AKfycbyEda91TPI9tNMYizYfTcgnRp
 const CONVENTION_DATE=new Date("2026-11-24T00:00:00");
 
 /* ============================================================
-   DOCUMENT AVAILABILITY — flip a key to true once that document
-   is ready to launch. Anything left false renders as a locked
-   "Coming Soon" button (greyed out, not clickable) instead of a
-   working download link, even after a successful lookup.
+   DOCUMENT DEFINITIONS & AVAILABILITY — flip a key to true once
+   that document is ready to launch. Anything left false is folded
+   into a single "coming soon" sentence instead of a broken-looking
+   tile, and simply drops out once nothing is left pending.
      f1 = CEO's Note        f2 = Travel Tickets
      f3 = Itinerary         f4 = Accommodation
    ============================================================ */
@@ -482,6 +562,63 @@ const DOC_AVAILABILITY={
   f3:false,
   f4:false
 };
+
+const ICON_NOTE='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 1.8h5.2L12 4.6v9.6H4z"/><path d="M9.2 1.8v2.8H12"/><path d="M6 8.4h4M6 10.6h4"/></svg>';
+const ICON_PLANE='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 1.5 1.7 6.4l4.2 1.6"/><path d="M14.5 1.5 9.6 14.3l-3.7-6.3 8.6-6.5z"/></svg>';
+const ICON_CAL='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="12" height="11" rx="1.3"/><path d="M2 6.4h12"/><path d="M5.4 1.6v2.4M10.6 1.6v2.4"/></svg>';
+const ICON_HOTEL='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M1.6 13V4.4"/><path d="M1.6 10.4h12.8v2.6"/><path d="M3.8 10.4V6.8h6.8a1.8 1.8 0 0 1 1.8 1.8v1.8"/></svg>';
+const ICON_CLOCK='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.4"/><path d="M8 4.8V8l2.6 1.6"/></svg>';
+const ICON_CHEVRON='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5 11 8l-5 4.5"/></svg>';
+
+const DOCS=[
+  {key:"f1", label:"CEO's Note", desc:"A short welcome message ahead of the convention.", icon:ICON_NOTE},
+  {key:"f2", label:"Travel Tickets", desc:"Your flight and transfer details.", icon:ICON_PLANE},
+  {key:"f3", label:"Itinerary", desc:"The full day-by-day schedule.", icon:ICON_CAL},
+  {key:"f4", label:"Accommodation", desc:"Your hotel and stay information.", icon:ICON_HOTEL}
+];
+
+function joinNames(names){
+  if(names.length===0) return "";
+  if(names.length===1) return names[0];
+  if(names.length===2) return names[0]+" and "+names[1];
+  return names.slice(0,-1).join(", ")+" and "+names[names.length-1];
+}
+
+/* Builds the document hub from the same DOC_AVAILABILITY gate used
+   everywhere else — available docs become rich rows with the live
+   href from the API response; anything unavailable is summarised in
+   one plain sentence rather than several separate disabled tiles. */
+function renderDocs(fileMap){
+  const list=document.getElementById("docsList");
+  list.innerHTML="";
+
+  const available=DOCS.filter(function(d){ return DOC_AVAILABILITY[d.key]; });
+  const pending=DOCS.filter(function(d){ return !DOC_AVAILABILITY[d.key]; });
+
+  available.forEach(function(d){
+    const a=document.createElement("a");
+    a.className="doc-row";
+    a.href=fileMap[d.key];
+    a.target="_blank";
+    a.rel="noopener";
+    a.setAttribute("aria-label", d.label+" — "+d.desc);
+    a.innerHTML=
+      '<span class="doc-icon" aria-hidden="true">'+d.icon+'</span>'+
+      '<span class="doc-text"><span class="doc-title">'+d.label+'</span>'+
+      '<span class="doc-desc">'+d.desc+'</span></span>'+
+      '<span class="doc-chevron" aria-hidden="true">'+ICON_CHEVRON+'</span>';
+    list.appendChild(a);
+  });
+
+  if(pending.length){
+    const p=document.createElement("p");
+    p.className="doc-pending";
+    p.innerHTML=
+      '<span class="doc-icon" aria-hidden="true">'+ICON_CLOCK+'</span>'+
+      '<span>'+joinNames(pending.map(function(d){ return d.label; }))+' will appear here as soon as they are ready.</span>';
+    list.appendChild(p);
+  }
+}
 
 /* Calendar-day difference (local midnight to local midnight) — used
    only to pick which badge-tap message pool feels right (upcoming /
@@ -561,8 +698,8 @@ function openPopup(){
 /* Announcements can be a plain image (a flyer/banner) or a page/PDF
    link. Images are rendered as <img> with object-fit:contain so the
    whole thing always scales to fit inside the popup at once; anything
-   else falls back to the iframe as before. A brief loading state
-   covers the gap while the image/page itself is still fetching. */
+   else falls back to the iframe. A brief loading state covers the gap
+   while the image/page itself is still fetching. */
 function isImageUrl(url){
   return /\.(png|jpe?g|gif|webp|bmp|svg)(\?.*)?$/i.test(url);
 }
@@ -605,23 +742,24 @@ async function showGeneralPopup(){
   }
 }
 
-/* Applies DOC_AVAILABILITY to whatever buttons are on the page —
-   locks any button whose key is false into a greyed-out, non-clickable
-   "Coming Soon" state. */
-function applyDocAvailability(){
-  document.querySelectorAll(".dl-btn[data-key]").forEach(function(btn){
-    const key=btn.getAttribute("data-key");
-    if(DOC_AVAILABILITY[key]){
-      btn.classList.remove("disabled");
-      btn.removeAttribute("aria-disabled");
-      btn.removeAttribute("tabindex");
-    }else{
-      btn.classList.add("disabled");
-      btn.setAttribute("aria-disabled","true");
-      btn.setAttribute("tabindex","-1");
-      btn.removeAttribute("href");
-    }
-  });
+function resetLookupState(){
+  const inputEl=document.getElementById("input");
+  const msg=document.getElementById("msg");
+  const downloads=document.getElementById("downloads");
+  const btn=document.getElementById("btn");
+  const resetLink=document.getElementById("resetLink");
+
+  inputEl.value="";
+  inputEl.removeAttribute("aria-invalid");
+  msg.className="";
+  msg.innerHTML="";
+  downloads.classList.remove("show");
+  document.getElementById("docsList").innerHTML="";
+  btn.disabled=false;
+  btn.textContent="Find My Documents";
+  btn.classList.remove("success-state");
+  resetLink.hidden=true;
+  inputEl.focus();
 }
 
 async function searchDoc(event){
@@ -633,10 +771,14 @@ async function searchDoc(event){
   const loader=document.getElementById("loader");
   const btn=document.getElementById("btn");
   const downloads=document.getElementById("downloads");
+  const resetLink=document.getElementById("resetLink");
+
   msg.className="";
   msg.innerHTML="";
   downloads.classList.remove("show");
   inputEl.removeAttribute("aria-invalid");
+  btn.classList.remove("success-state");
+  resetLink.hidden=true;
 
   if(value===""){
     msg.className="error";
@@ -653,22 +795,21 @@ async function searchDoc(event){
     const response=await fetch(API_URL+"?input="+encodeURIComponent(value));
     const data=await response.json();
     loader.classList.remove("show");
-    btn.disabled=false;
 
     if(data.status==="success"){
       msg.className="success";
       msg.innerHTML="Your personalised convention documents are ready.";
 
       const fileMap={f1:data.f1, f2:data.f2, f3:data.f3, f4:data.f4};
-      document.querySelectorAll(".dl-btn[data-key]").forEach(function(dlBtn){
-        const key=dlBtn.getAttribute("data-key");
-        if(DOC_AVAILABILITY[key]){
-          dlBtn.href=fileMap[key];
-        }
-      });
-      applyDocAvailability();
+      renderDocs(fileMap);
       downloads.classList.add("show");
+
+      btn.textContent="✓ Documents Ready";
+      btn.classList.add("success-state");
+      btn.disabled=true;
+      resetLink.hidden=false;
     }else{
+      btn.disabled=false;
       msg.className="error";
       msg.innerHTML=data.message;
       inputEl.setAttribute("aria-invalid","true");
@@ -682,19 +823,18 @@ async function searchDoc(event){
 }
 
 document.getElementById("lookupForm").addEventListener("submit", searchDoc);
+document.getElementById("resetLink").addEventListener("click", resetLookupState);
 
 window.addEventListener("DOMContentLoaded", function(){
   updateCountdown();
   setInterval(updateCountdown, 20000);
-  applyDocAvailability();
   showGeneralPopup();
 });
 
 /* ---- Badge interaction: tapping the party badge fills the whole
    screen with confetti, gives the badge a playful wiggle, and
    surfaces a short rotating message. The message pool depends on
-   where "today" sits relative to the convention date, so it keeps
-   making sense before, on, and after the day itself. ---- */
+   where "today" sits relative to the convention date. ---- */
 const messagesUpcoming=[
   "🎊 Can't wait to see you in London!",
   "✨ Big Ben is counting the days too",
