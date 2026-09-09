@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>London Training Convention</title>
+<title>London Training Convention 2026</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -12,13 +12,15 @@
   --navy-deep:#0F2A4A;
   --navy-night:#02081C;   /* sampled directly from the poster's own bottom-edge navy */
   --navy-glow:#051642;    /* sampled from the poster's brightest mid-height navy glow */
+  --navy-panel:#0A1626;   /* solid panel fill, sits quietly on the poster's glow */
   --red-error:#FF6E7C;
   --ink:#10202E;
   --white:#FFFFFF;
   --success:#3FDC9B;
   --gold-deep:#B8862E;    /* sampled from the poster's skyline shadow gold */
-  --gold:#DDAE4E;         /* close to the poster's mid-tone gold, nudged for UI legibility */
-  --gold-light:#F6DFA0;   /* synthetic highlight tint for text, in the same gold family */
+  --gold:#DDAE4E;         /* close to the poster's mid-tone gold */
+  --gold-light:#F3E1B0;   /* palest gold for headings and hero text */
+  --gold-body:#E8D6A6;    /* readable gold for body copy */
   --font-body:'IBM Plex Sans', -apple-system, 'Segoe UI', sans-serif;
   --font-display:'Cinzel', Georgia, serif;
 
@@ -58,19 +60,15 @@ body{
 }
 
 /* ---- The poster lives in its own fixed, viewport-sized layer so its
-   size/position can never drift as the card below grows or shrinks
-   (background-attachment:fixed on <body> is unreliable for exactly
-   that reason on mobile browsers).
-
+   size/position can never drift as the card below grows or shrinks.
    Two background layers are stacked here:
    1) the poster artwork itself, always shown in full via `contain`
       so it is NEVER cropped or distorted, anchored to the top since
       that's where all its content lives;
    2) underneath it, a vertical gradient built from colours actually
-      sampled from the poster's own navy glow. On any viewport wider
-      than the poster's own ratio, `contain` letterboxes the sides —
-      instead of exposing a flat, mismatched fill there, the exposed
-      strip continues the poster's real lighting. ---- */
+      sampled from the poster's own navy glow, so on wide viewports
+      the letterboxed side strips continue the poster's real lighting
+      instead of exposing a flat, mismatched fill. ---- */
 .hero-bg{
   position:fixed;inset:0;z-index:0;pointer-events:none;
   background-image:
@@ -92,11 +90,11 @@ body{
   position:fixed;inset:0;z-index:1;pointer-events:none;
   background:
     linear-gradient(180deg,
-      rgba(2,5,9,.14) 0%,
+      rgba(2,5,9,.12) 0%,
       rgba(2,5,9,0) 16%,
       rgba(2,5,9,0) calc(var(--safe-y) - 70px),
-      rgba(2,5,9,.55) calc(var(--safe-y) + 10px),
-      rgba(2,5,9,.6) 100%);
+      rgba(2,5,9,.5) calc(var(--safe-y) + 10px),
+      rgba(2,5,9,.56) 100%);
 }
 
 .sr-only{
@@ -104,24 +102,10 @@ body{
   clip:rect(0,0,0,0);white-space:nowrap;border:0;
 }
 
-/* celebratory confetti, one gentle burst on load */
+/* confetti burst — created dynamically by fireConfettiBurst() only at
+   one meaningful moment (successful verification), never on load and
+   never as an idle decoration */
 .confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:5;}
-.confetti span{position:absolute;top:-8%;width:7px;height:13px;opacity:0;border-radius:1px;animation:confettiFall 3.4s ease-in forwards;}
-@keyframes confettiFall{0%{transform:translateY(0) rotate(0deg);opacity:1;}85%{opacity:1;}100%{transform:translateY(72vh) rotate(340deg);opacity:0;}}
-.confetti span:nth-child(1){left:6%;background:var(--gold);animation-delay:.10s;}
-.confetti span:nth-child(2){left:14%;background:var(--white);animation-delay:.50s;}
-.confetti span:nth-child(3){left:22%;background:var(--gold-light);animation-delay:.15s;}
-.confetti span:nth-child(4){left:30%;background:var(--white);animation-delay:.65s;}
-.confetti span:nth-child(5){left:38%;background:var(--gold-deep);animation-delay:.30s;}
-.confetti span:nth-child(6){left:46%;background:var(--white);animation-delay:.05s;}
-.confetti span:nth-child(7){left:54%;background:var(--gold-light);animation-delay:.45s;}
-.confetti span:nth-child(8){left:62%;background:var(--white);animation-delay:.20s;}
-.confetti span:nth-child(9){left:70%;background:var(--gold);animation-delay:.55s;}
-.confetti span:nth-child(10){left:78%;background:var(--white);animation-delay:.35s;}
-.confetti span:nth-child(11){left:86%;background:var(--gold-deep);animation-delay:.10s;}
-.confetti span:nth-child(12){left:94%;background:var(--white);animation-delay:.50s;}
-.confetti span:nth-child(13){left:50%;background:var(--gold);animation-delay:.60s;}
-.confetti span:nth-child(14){left:18%;background:var(--white);animation-delay:.40s;}
 
 /* ---- CONTENT — one column, sitting inside the poster's own measured
    negative space. --safe-y guarantees the first item here never
@@ -130,273 +114,223 @@ body{
   position:relative;z-index:2;
   min-height:100vh;
   display:flex;flex-direction:column;align-items:center;
-  padding: var(--safe-y) 24px 40px;
+  padding: var(--safe-y) 20px 36px;
   text-align:center;
 }
 @supports (height:100dvh){ .page{min-height:100dvh;} }
+
+.hero-seal{
+  width:32px;height:32px;margin:0 auto 12px;color:var(--gold);
+  opacity:0;animation:sealIn .55s .05s ease both;
+}
+.hero-seal svg{width:100%;height:100%;display:block;}
 
 /* the first thing a qualified employee reads: short, confident,
    sitting directly on the poster rather than in an opaque block */
 .hero-welcome{
   font-family:var(--font-display);font-weight:600;
-  font-size:1.15rem;line-height:1.4;letter-spacing:.01em;
+  font-size:clamp(1.05rem,3.6vw,1.3rem);line-height:1.4;letter-spacing:.01em;
   color:var(--gold-light);
-  max-width:290px;margin:0 auto 24px;
+  max-width:290px;margin:0 auto 22px;
   text-shadow:0 2px 12px rgba(2,5,9,.75);
-  animation:rise .7s ease both;
+  opacity:0;animation:rise .6s .18s ease both;
 }
-@media (min-width:420px){ .hero-welcome{font-size:1.3rem;} }
 
-/* the entry card — a frosted glass panel, layered like real glass:
-   a faint gradient sheen, blur, a soft gold edge, and a thin
-   specular highlight along the top */
+/* the verification card — a quiet, solid panel rather than a stack of
+   glass/gradient/blur layers, so it reads as a real object on the
+   poster, not a decorative effect */
 .card{
-  position:relative;z-index:1;width:100%;
-  background:
-    linear-gradient(165deg, rgba(255,255,255,.09), rgba(255,255,255,.02) 35%, transparent 60%),
-    linear-gradient(180deg, rgba(17,36,60,.48), rgba(6,14,26,.74));
-  backdrop-filter:blur(24px) saturate(170%);
-  -webkit-backdrop-filter:blur(24px) saturate(170%);
-  border:1px solid rgba(227,181,79,.32);
-  border-radius:20px;
-  padding:32px 26px;
-  margin:0 auto;max-width:360px;text-align:center;
-  box-shadow:0 28px 60px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.1), inset 0 -1px 0 rgba(0,0,0,.25);
-  animation:rise .9s .1s ease both;
+  position:relative;width:100%;
+  background:linear-gradient(180deg, #102542 0%, var(--navy-panel) 100%);
+  border:1px solid rgba(221,174,78,.35);
+  border-top-color:rgba(221,174,78,.55);
+  border-radius:16px;
+  padding:28px 24px;
+  margin:0 auto;max-width:380px;text-align:center;
+  box-shadow:0 20px 40px rgba(0,0,0,.4);
+  opacity:0;animation:rise .6s .28s ease both;
 }
-.card::before{
-  content:"";position:absolute;top:0;left:14%;right:14%;height:1px;
-  background:linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent);
-}
-.badge{
-  position:absolute;top:-18px;right:-14px;width:50px;height:50px;border-radius:50%;
-  background:linear-gradient(135deg, rgba(17,36,60,.92), rgba(6,14,26,.96));
-  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-  border:1.5px solid rgba(227,181,79,.6);display:flex;align-items:center;justify-content:center;
-  font-size:22px;box-shadow:0 8px 20px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.15);
-  animation:badgeIn .5s .7s cubic-bezier(.34,1.56,.64,1) both;
-  cursor:pointer;appearance:none;-webkit-appearance:none;padding:0;
-  transition:transform .15s ease;
-}
-.badge:hover{transform:scale(1.08);}
-.badge:active{transform:scale(.94);}
-@keyframes badgeIn{0%{transform:scale(0);opacity:0;}100%{transform:scale(1);opacity:1;}}
 
-/* a small glass toast that pops up when the badge is tapped */
-.toast{
-  position:fixed;left:50%;top:13%;transform:translate(-50%,-8px);
-  z-index:60;pointer-events:none;white-space:nowrap;
-  background:linear-gradient(135deg, rgba(15,32,54,.8), rgba(6,14,26,.88));
-  backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);
-  border:1px solid rgba(227,181,79,.4);border-radius:999px;
-  padding:10px 20px;color:var(--gold-light);
-  font-family:var(--font-display);font-size:13px;font-weight:600;letter-spacing:.02em;
-  box-shadow:0 14px 30px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.12);
-  opacity:0;transition:opacity .35s ease, transform .35s ease;
-}
-.toast.show{opacity:1;transform:translate(-50%,0);}
-
-/* two typographic motifs lifted straight from the poster itself, so
-   the card reads as a continuation of the artwork: a hairline rule
-   flanking a gold diamond either side of a caption (matching the
-   poster's own "◆ 2026 ◆"), and a plainer rule (matching its
-   "— TRAINING CONVENTION —") */
-.divider-gem, .divider-plain{
+.divider-gem{
   display:flex;align-items:center;justify-content:center;gap:10px;
-  font-family:var(--font-display);text-transform:uppercase;font-weight:600;
-  color:var(--gold-light);
+  font-family:var(--font-display);font-weight:600;font-size:.95rem;
+  color:var(--gold-light);margin:0 0 12px;
 }
-.divider-gem{font-size:.68rem;letter-spacing:.22em;margin:0 0 10px;opacity:.95;}
-.divider-gem::before,.divider-gem::after{content:"";width:20px;height:1px;background:rgba(227,181,79,.55);}
-.divider-gem .gem{color:var(--gold);font-size:.55rem;}
-.divider-plain{font-size:.8rem;letter-spacing:.16em;}
-.divider-plain::before,.divider-plain::after{content:"";width:26px;height:1px;background:rgba(227,181,79,.55);}
+.divider-gem::before,.divider-gem::after{content:"";width:22px;height:1px;background:rgba(221,174,78,.5);}
+.divider-gem .gem{color:var(--gold);font-size:.6rem;}
 
 .card-instruction{
   font-family:var(--font-body);font-size:.85rem;line-height:1.55;
-  color:rgba(246,223,160,.72);
-  max-width:270px;margin:0 auto 22px;
+  color:rgba(232,214,166,.72);
+  max-width:280px;margin:0 auto 20px;
 }
 
-.input-wrap{
-  padding:1px;border-radius:13px;margin-bottom:18px;
-  background:rgba(227,181,79,.5);
-}
+label.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+
 input{
-  display:block;width:100%;padding:14px 16px;font-size:16px;font-family:var(--font-body);color:var(--gold-light);
-  border-radius:12px;border:none;outline:none;text-align:center;
-  background:rgba(9,20,35,.55);
-  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-  transition:box-shadow .2s ease, background .2s ease;
+  display:block;width:100%;padding:14px 16px;font-size:16px;font-family:var(--font-body);
+  color:var(--gold-light);text-align:center;
+  border-radius:11px;border:1px solid rgba(221,174,78,.4);outline:none;
+  background:rgba(3,10,20,.55);
+  margin-bottom:16px;
+  transition:box-shadow .18s ease, border-color .18s ease;
 }
-input:focus{box-shadow:0 0 0 4px rgba(227,181,79,.22);background:rgba(9,20,35,.72);}
-input::placeholder{color:rgba(246,223,160,.5);}
-input[aria-invalid="true"]{box-shadow:0 0 0 3px rgba(255,110,124,.45);}
+input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(221,174,78,.22);}
+input::placeholder{color:rgba(232,214,166,.45);}
+input[aria-invalid="true"]{border-color:var(--red-error);box-shadow:0 0 0 3px rgba(255,110,124,.2);}
 
+/* primary CTA: solid gold on dark panel is the only strong-contrast
+   element in the card, so it reads as the one obvious next step */
 button{
-  position:relative;overflow:hidden;
-  width:100%;padding:15px;border:1px solid rgba(227,181,79,.55);border-radius:11px;cursor:pointer;
-  background:linear-gradient(135deg, rgba(15,42,74,.92), rgba(5,13,26,.96));
-  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-  color:var(--gold-light);
-  font-family:var(--font-body);font-weight:600;font-size:15px;letter-spacing:.1em;text-transform:uppercase;
-  box-shadow:0 14px 30px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.1);
-  transition:transform .2s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
+  width:100%;padding:14px;border:1px solid var(--gold);border-radius:10px;cursor:pointer;
+  background:var(--gold);
+  color:#211202;
+  font-family:var(--font-body);font-weight:600;font-size:15px;letter-spacing:.01em;
+  transition:transform .15s ease, background .15s ease, box-shadow .15s ease;
 }
-button::after{
-  content:"";position:absolute;top:0;left:-60%;width:35%;height:100%;
-  background:linear-gradient(120deg, transparent, rgba(227,181,79,.35), transparent);
-  transform:skewX(-20deg);transition:left .6s ease;
-}
-button:hover::after{left:130%;}
-button:hover{transform:translateY(-2px);box-shadow:0 18px 38px rgba(15,42,74,.5), inset 0 1px 0 rgba(255,255,255,.15);}
+button:hover{background:#E9BE6A;transform:translateY(-1px);box-shadow:0 10px 22px rgba(221,174,78,.28);}
 button:active{transform:translateY(0);}
-button:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none;}
+button:disabled{cursor:not-allowed;transform:none;box-shadow:none;}
 button:focus-visible, input:focus-visible{outline:2px solid var(--gold-light);outline-offset:2px;}
 
 /* the button's calm "done" state after a successful lookup — a
-   distinct, confirmed look, not just a greyed-out disabled control */
+   distinct, confirmed look, not a greyed-out disabled control */
 button#btn.success-state{
-  border-color:rgba(63,220,155,.55);
-  background:linear-gradient(135deg, rgba(63,220,155,.16), rgba(5,13,26,.96));
+  background:transparent;color:var(--success);
+  border-color:rgba(63,220,155,.6);
 }
-button#btn.success-state::after{display:none;}
-button#btn:disabled.success-state{opacity:1;cursor:default;}
+button#btn:disabled.success-state{cursor:default;}
 
 .loader{
-  display:none;margin-top:16px;align-items:center;justify-content:center;gap:8px;
-  font-family:var(--font-body);font-size:14px;color:var(--gold-light);opacity:.85;
+  display:none;margin-top:14px;align-items:center;justify-content:center;gap:8px;
+  font-family:var(--font-body);font-size:14px;color:var(--gold-body);opacity:.85;
 }
 .loader.show{display:flex;}
 .spinner{
-  width:14px;height:14px;border:2px solid rgba(227,181,79,.25);border-top-color:var(--gold);
+  width:14px;height:14px;border:2px solid rgba(221,174,78,.25);border-top-color:var(--gold);
   border-radius:50%;display:inline-block;animation:spin .8s linear infinite;
 }
 @keyframes spin{to{transform:rotate(360deg);}}
 
-#msg{margin-top:14px;text-align:center;font-weight:600;font-family:var(--font-body);font-size:15px;min-height:0;}
+#msg{margin-top:12px;text-align:center;font-weight:600;font-family:var(--font-body);font-size:14.5px;min-height:0;}
 .success{color:var(--success);}
 .error{color:var(--red-error);}
 
-/* the document hub — revealed after a successful lookup. Available
-   documents render as full rows (icon, title, description); anything
-   still unavailable is summarised in a single plain sentence instead
-   of several separate "broken-looking" tiles, and that sentence
-   simply disappears once nothing is left pending. */
-.downloads{display:none;margin-top:20px;}
+/* the document hub — all four documents always render as their own
+   row, so nothing is ever hidden behind a summary sentence. A row
+   whose document isn't ready yet keeps the same shape and icon, but
+   is visually quieter, isn't a link, and reads "Coming soon" where
+   its description would normally sit. */
+.downloads{display:none;margin-top:18px;}
 .downloads.show{display:block;}
-.docs-list{display:flex;flex-direction:column;gap:10px;text-align:left;}
+.docs-list{display:flex;flex-direction:column;gap:9px;text-align:left;}
 
 .doc-row{
   display:flex;align-items:center;gap:12px;
-  padding:13px 14px;border-radius:13px;text-decoration:none;
-  background:linear-gradient(135deg, rgba(227,181,79,.30), rgba(184,134,46,.16));
-  border:1px solid rgba(227,181,79,.46);
-  backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);
-  box-shadow:0 8px 18px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.1);
-  transition:transform .2s ease, box-shadow .2s ease, background .2s ease;
+  padding:12px 13px;border-radius:12px;text-decoration:none;
+  background:rgba(221,174,78,.09);
+  border:1px solid rgba(221,174,78,.32);
   color:var(--gold-light);
+  transition:transform .15s ease, background .15s ease, border-color .15s ease;
 }
-.doc-row:hover, .doc-row:focus-visible{
-  transform:translateY(-2px);
-  background:linear-gradient(135deg, rgba(227,181,79,.42), rgba(184,134,46,.22));
-  box-shadow:0 12px 22px rgba(184,134,46,.28), inset 0 1px 0 rgba(255,255,255,.18);
+a.doc-row:hover, a.doc-row:focus-visible{
+  transform:translateY(-1px);
+  background:rgba(221,174,78,.16);
+  border-color:rgba(221,174,78,.55);
+}
+.doc-row.pending{
+  background:rgba(255,255,255,.03);
+  border-color:rgba(255,255,255,.1);
+  cursor:default;
 }
 .doc-icon{
-  flex-shrink:0;width:34px;height:34px;border-radius:9px;
+  flex-shrink:0;width:32px;height:32px;border-radius:8px;
   display:flex;align-items:center;justify-content:center;
-  background:rgba(9,20,35,.5);border:1px solid rgba(227,181,79,.4);
+  background:rgba(3,10,20,.5);border:1px solid rgba(221,174,78,.3);
 }
-.doc-icon svg{width:16px;height:16px;}
+.doc-row.pending .doc-icon{border-color:rgba(255,255,255,.14);opacity:.7;}
+.doc-icon svg{width:15px;height:15px;}
 .doc-text{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;}
-.doc-title{font-weight:600;font-size:14px;}
-.doc-desc{font-size:12px;color:rgba(246,223,160,.68);line-height:1.35;}
-.doc-chevron{flex-shrink:0;width:14px;height:14px;opacity:.7;}
-
-.doc-pending{
-  display:flex;align-items:flex-start;gap:10px;text-align:left;
-  padding:12px 14px;border-radius:13px;
-  background:rgba(9,20,35,.35);
-  border:1px solid rgba(227,181,79,.18);
-}
-.doc-pending .doc-icon{background:rgba(9,20,35,.4);border-color:rgba(227,181,79,.22);opacity:.75;}
-.doc-pending span:last-child{font-size:12.5px;line-height:1.55;color:rgba(246,223,160,.62);padding-top:6px;}
+.doc-title{font-weight:600;font-size:13.5px;}
+.doc-row.pending .doc-title{color:rgba(232,214,166,.75);}
+.doc-desc{font-size:12px;color:rgba(232,214,166,.62);line-height:1.35;}
+.doc-desc.doc-soon{color:rgba(221,174,78,.75);font-style:italic;}
+.doc-chevron{flex-shrink:0;width:13px;height:13px;opacity:.65;}
+.doc-status{flex-shrink:0;width:14px;height:14px;opacity:.5;}
 
 /* the quiet escape hatch after a successful lookup, in case the
    employee wants to check a different ID on a shared device */
 .reset-link{
-  margin-top:18px;background:none;border:none;box-shadow:none;padding:0;width:auto;
-  font-family:var(--font-body);font-size:12.5px;font-weight:500;letter-spacing:normal;text-transform:none;
-  color:rgba(246,223,160,.62);text-decoration:underline;text-decoration-color:rgba(227,181,79,.4);
+  margin-top:16px;background:none;border:none;box-shadow:none;padding:0;width:auto;
+  font-family:var(--font-body);font-size:12.5px;font-weight:500;letter-spacing:normal;
+  color:rgba(232,214,166,.6);text-decoration:underline;text-decoration-color:rgba(221,174,78,.4);
   cursor:pointer;
 }
 .reset-link:hover{color:var(--gold-light);}
 .reset-link:focus-visible{outline:2px solid var(--gold-light);outline-offset:3px;}
 .reset-link[hidden]{display:none;}
 
-/* the countdown — deliberately secondary now: it sits after the
-   lookup card, quieter and smaller, as supporting information rather
-   than the page's first or largest moment. */
-.countdown-wrap{margin-top:32px;opacity:.92;animation:rise .7s ease both;}
+/* the countdown — deliberately secondary: quieter and smaller,
+   supporting information rather than the page's first moment */
+.countdown-wrap{margin-top:30px;}
 .countdown-label{
-  font-family:var(--font-display);font-weight:600;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;
+  font-family:var(--font-display);font-weight:600;font-size:.68rem;letter-spacing:.06em;
   color:var(--gold-light);opacity:.85;margin-bottom:10px;text-shadow:0 2px 8px rgba(2,5,9,.65);
 }
 .countdown-stats{display:flex;align-items:center;justify-content:center;gap:8px;}
 .stat-box{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  width:50px;height:50px;border-radius:12px;
-  background:
-    linear-gradient(165deg, rgba(255,255,255,.15), rgba(255,255,255,.03) 40%, transparent 70%),
-    linear-gradient(180deg, rgba(17,36,60,.55), rgba(6,14,26,.8));
-  backdrop-filter:blur(16px) saturate(170%);
-  -webkit-backdrop-filter:blur(16px) saturate(170%);
-  border:1px solid rgba(227,181,79,.5);
-  box-shadow:0 10px 22px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.14);
+  width:48px;height:48px;border-radius:11px;
+  background:rgba(10,22,38,.55);
+  border:1px solid rgba(221,174,78,.4);
 }
 .stat-num{
-  font-family:var(--font-display);font-weight:700;font-size:1.15rem;line-height:1;color:var(--gold-light);
-  text-shadow:0 2px 8px rgba(2,5,9,.5);
+  font-family:var(--font-display);font-weight:700;font-size:1.1rem;line-height:1;color:var(--gold-light);
   font-variant-numeric:tabular-nums;
 }
-.stat-label{
-  margin-top:4px;font-family:var(--font-body);font-weight:600;font-size:.52rem;letter-spacing:.1em;
-  color:rgba(246,223,160,.75);
-}
-.stat-sep{font-family:var(--font-display);font-weight:600;color:rgba(227,181,79,.5);font-size:1rem;}
+.stat-label{margin-top:4px;font-family:var(--font-body);font-weight:600;font-size:.52rem;letter-spacing:.08em;color:rgba(232,214,166,.72);}
+.stat-sep{font-family:var(--font-display);font-weight:600;color:rgba(221,174,78,.5);font-size:1rem;}
 .countdown-done{
-  display:inline-flex;align-items:center;gap:10px;
-  background:linear-gradient(135deg, rgba(17,36,60,.62), rgba(6,14,26,.78));
-  backdrop-filter:blur(14px) saturate(160%);
-  -webkit-backdrop-filter:blur(14px) saturate(160%);
-  color:var(--gold-light);font-family:var(--font-display);font-weight:600;font-size:.85rem;letter-spacing:.08em;
-  padding:10px 22px;border-radius:999px;border:1px solid rgba(227,181,79,.55);
-  box-shadow:0 10px 26px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.14);
+  display:inline-flex;align-items:center;gap:9px;
+  background:rgba(10,22,38,.55);
+  color:var(--gold-light);font-family:var(--font-display);font-weight:600;font-size:.85rem;letter-spacing:.03em;
+  padding:9px 20px;border-radius:999px;border:1px solid rgba(221,174,78,.5);
 }
 .countdown-done::before{
   content:"";width:6px;height:6px;border-radius:50%;
-  background:var(--gold-light);box-shadow:0 0 8px 2px rgba(246,223,160,.8);
+  background:var(--gold-light);box-shadow:0 0 8px 2px rgba(243,225,176,.7);
   flex-shrink:0;
 }
 
 /* closing line — margin-top:auto pushes it to the bottom of .page's
    flex column: on short content it pins to the viewport bottom, on
-   tall content it settles at the end of the scrollable page — either
-   way, always last, never mid-flow. */
+   tall content it settles at the end of the scrollable page. */
 .footer-note{
-  margin-top:auto;
-  padding-top:28px;
+  margin-top:auto;padding-top:26px;
+  font-family:var(--font-display);font-size:.85rem;letter-spacing:.04em;color:var(--gold-light);
   text-shadow:0 2px 10px rgba(2,5,9,.7);
 }
 
-@keyframes rise{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+@keyframes rise{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+@keyframes sealIn{from{opacity:0;transform:scale(.7);}to{opacity:1;transform:scale(1);}}
+
+/* a small toast, shown once when verification succeeds */
+.toast{
+  position:fixed;left:50%;top:12%;transform:translate(-50%,-8px);
+  z-index:60;pointer-events:none;white-space:nowrap;max-width:88vw;
+  background:rgba(10,22,38,.92);
+  border:1px solid rgba(221,174,78,.4);border-radius:999px;
+  padding:10px 20px;color:var(--gold-light);
+  font-family:var(--font-display);font-size:13px;font-weight:600;letter-spacing:.01em;
+  box-shadow:0 14px 28px rgba(0,0,0,.4);
+  opacity:0;transition:opacity .3s ease, transform .3s ease;
+}
+.toast.show{opacity:1;transform:translate(-50%,0);}
 
 /* general announcement popup — opens automatically on page load,
-   closed via the corner × button, backdrop tap, or Escape. The outer
-   frame now matches the site's own navy/gold glass language instead
-   of a generic white browser modal; a light inner "paper" well hosts
-   the actual announcement image/page so arbitrary assets stay legible
-   regardless of their own background. */
+   closed via the corner × button, backdrop tap, or Escape. A light
+   inner "paper" well hosts the actual announcement image/page so
+   arbitrary assets stay legible regardless of their own background. */
 .popup-overlay{
   display:none;position:fixed;inset:0;z-index:50;align-items:center;justify-content:center;
   background:rgba(2,5,9,.78);padding:20px;
@@ -404,25 +338,23 @@ button#btn:disabled.success-state{opacity:1;cursor:default;}
 .popup-overlay.show{display:flex;}
 .popup-box{
   position:relative;
-  background:
-    linear-gradient(165deg, rgba(255,255,255,.09), rgba(255,255,255,.02) 35%, transparent 60%),
-    linear-gradient(180deg, rgba(17,36,60,.92), rgba(6,14,26,.96));
-  border:1px solid rgba(227,181,79,.4);
-  border-radius:20px;padding:22px 18px 18px;max-width:480px;width:100%;
+  background:linear-gradient(180deg, #102542 0%, var(--navy-panel) 100%);
+  border:1px solid rgba(221,174,78,.4);
+  border-radius:16px;padding:22px 18px 18px;max-width:480px;width:100%;
   max-height:85vh;display:flex;flex-direction:column;gap:12px;
-  box-shadow:0 30px 60px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.1);
+  box-shadow:0 24px 50px rgba(0,0,0,.5);
 }
-.popup-eyebrow{margin:0;font-size:.64rem;}
+.popup-eyebrow{margin:0;}
 .popup-close{
   position:absolute;top:-14px;right:-14px;width:34px;height:34px;border-radius:50%;
-  border:1px solid rgba(227,181,79,.65);cursor:pointer;
-  background:linear-gradient(135deg, var(--navy-deep), #08182B);color:var(--gold-light);
+  border:1px solid rgba(221,174,78,.65);cursor:pointer;
+  background:var(--navy-deep);color:var(--gold-light);
   font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;
   box-shadow:0 8px 20px rgba(0,0,0,.4);
 }
 .popup-close:hover{opacity:.9;}
 .popup-well{
-  background:#fff;border-radius:12px;overflow:hidden;
+  background:#fff;border-radius:11px;overflow:hidden;
   display:flex;align-items:center;justify-content:center;padding:8px;
 }
 .popup-loading{
@@ -430,19 +362,32 @@ button#btn:disabled.success-state{opacity:1;cursor:default;}
   font-family:var(--font-body);font-size:14px;color:var(--ink);
 }
 .popup-loading .spinner{border-color:rgba(15,42,74,.2);border-top-color:var(--navy-deep);}
-.popup-well iframe{
-  width:100%;height:55vh;border:none;border-radius:8px;background:#f2f2f2;
-}
-/* object-fit:contain + max-height means the whole announcement image
-   always scales down to fit inside the frame — never cropped, never
-   requiring a scroll to see the rest of it */
+.popup-well iframe{width:100%;height:55vh;border:none;border-radius:8px;background:#f2f2f2;}
 .popup-well img{
   display:block;width:auto;height:auto;max-width:100%;max-height:70vh;
   border-radius:8px;background:#f2f2f2;object-fit:contain;
 }
 
+/* ---- Tablet and desktop: the poster is portrait, so on wide
+   viewports it stays a centered, letterboxed column (handled by the
+   background layer above). Content follows the same centered rhythm
+   instead of stretching into a generic wide layout — the card simply
+   gets a little more breathing room. ---- */
+@media (min-width:600px){
+  .card{max-width:400px;padding:32px 30px;}
+  .hero-welcome{max-width:340px;font-size:1.3rem;}
+}
+@media (min-width:1024px){
+  .card{max-width:420px;}
+  .page{padding-bottom:48px;}
+}
+
+@media (max-width:340px){
+  .card{padding:22px 18px;}
+  .doc-title{font-size:13px;}
+}
+
 @media (max-width:480px){
-  .card{padding:26px 20px;}
   .popup-well iframe{height:48vh;}
   .popup-well img{max-height:55vh;}
 }
@@ -468,42 +413,40 @@ button#btn:disabled.success-state{opacity:1;cursor:default;}
 
 <div class="hero-bg" aria-hidden="true"></div>
 <div class="bg-overlay" aria-hidden="true"></div>
+<div class="confetti" id="confetti" aria-hidden="true"></div>
 
-<div class="confetti" aria-hidden="true">
-  <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-  <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-</div>
-
-<h1 class="sr-only">London Training Convention — 2026 — IndusInd Nippon Life</h1>
+<h1 class="sr-only">London Training Convention 2026 — IndusInd Nippon Life</h1>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <main class="page">
 
+  <div class="hero-seal" aria-hidden="true">
+    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="16" cy="16" r="13.5"/>
+      <path d="M10.5 16.5 14 20l8-9"/>
+    </svg>
+  </div>
   <p class="hero-welcome">Your seat in London is confirmed.</p>
 
   <section class="card">
-    <button type="button" class="badge" id="celebrateBadge" aria-label="Tap for a surprise" onclick="celebrateBadge(event)">🎉</button>
-
     <p class="divider-gem" aria-hidden="true"><span class="gem">◆</span><span>Your Documents</span><span class="gem">◆</span></p>
     <p class="card-instruction">Enter your registered Employee ID or Mobile Number to access them.</p>
 
     <form id="lookupForm" novalidate>
       <label for="input" class="sr-only">Employee ID or Mobile Number</label>
-      <div class="input-wrap">
-        <input
-          id="input"
-          name="input"
-          type="text"
-          inputmode="text"
-          autocapitalize="off"
-          spellcheck="false"
-          placeholder="Employee ID / Mobile No."
-          autocomplete="off"
-          aria-describedby="msg"
-        >
-      </div>
-      <button type="submit" id="btn">Find My Documents</button>
+      <input
+        id="input"
+        name="input"
+        type="text"
+        inputmode="text"
+        autocapitalize="off"
+        spellcheck="false"
+        placeholder="Employee ID / Mobile No."
+        autocomplete="off"
+        aria-describedby="msg"
+      >
+      <button type="submit" id="btn">Access My Documents</button>
     </form>
 
     <div class="loader" id="loader" role="status" aria-live="polite"><span class="spinner"></span><span>Searching...</span></div>
@@ -513,11 +456,11 @@ button#btn:disabled.success-state{opacity:1;cursor:default;}
       <div class="docs-list" id="docsList"></div>
     </div>
 
-    <button type="button" class="reset-link" id="resetLink" hidden>Search a different ID</button>
+    <button type="button" class="reset-link" id="resetLink" hidden>Look up a different ID</button>
   </section>
 
   <div class="countdown-wrap" id="countdownWrap">
-    <p class="countdown-label" id="countdownLabel">Counting Down To London 2026</p>
+    <p class="countdown-label" id="countdownLabel">Counting down to London 2026</p>
     <div class="countdown-stats" id="countdownStats" role="status" aria-live="polite">
       <div class="stat-box"><span class="stat-num" id="cdDays">--</span><span class="stat-label">Days</span></div>
       <span class="stat-sep" aria-hidden="true">:</span>
@@ -527,7 +470,7 @@ button#btn:disabled.success-state{opacity:1;cursor:default;}
     </div>
   </div>
 
-  <p class="footer-note divider-plain">See You In London</p>
+  <p class="footer-note">See you in London</p>
 </main>
 
 <div class="popup-overlay" id="popupOverlay" role="dialog" aria-modal="true" aria-label="Announcement" onclick="if(event.target===this)closePopup()">
@@ -550,9 +493,10 @@ const CONVENTION_DATE=new Date("2026-11-24T00:00:00");
 
 /* ============================================================
    DOCUMENT DEFINITIONS & AVAILABILITY — flip a key to true once
-   that document is ready to launch. Anything left false is folded
-   into a single "coming soon" sentence instead of a broken-looking
-   tile, and simply drops out once nothing is left pending.
+   that document is ready to launch. All four always render as
+   their own row; anything left false renders the same row with
+   a "Coming soon" note instead of a link, so nothing is ever
+   hidden or folded away.
      f1 = CEO's Note        f2 = Travel Tickets
      f3 = Itinerary         f4 = Accommodation
    ============================================================ */
@@ -577,52 +521,49 @@ const DOCS=[
   {key:"f4", label:"Accommodation", desc:"Your hotel and stay information.", icon:ICON_HOTEL}
 ];
 
-function joinNames(names){
-  if(names.length===0) return "";
-  if(names.length===1) return names[0];
-  if(names.length===2) return names[0]+" and "+names[1];
-  return names.slice(0,-1).join(", ")+" and "+names[names.length-1];
-}
-
 /* Builds the document hub from the same DOC_AVAILABILITY gate used
-   everywhere else — available docs become rich rows with the live
-   href from the API response; anything unavailable is summarised in
-   one plain sentence rather than several separate disabled tiles. */
+   everywhere else. Every document in DOCS gets its own row, always —
+   available ones become links with a live href from the API
+   response; unavailable ones render the identical row shape with a
+   "Coming soon" note in place of the description, so the set of four
+   is always visible and nothing looks broken or missing. */
 function renderDocs(fileMap){
   const list=document.getElementById("docsList");
   list.innerHTML="";
 
-  const available=DOCS.filter(function(d){ return DOC_AVAILABILITY[d.key]; });
-  const pending=DOCS.filter(function(d){ return !DOC_AVAILABILITY[d.key]; });
+  DOCS.forEach(function(d){
+    const isAvailable=!!DOC_AVAILABILITY[d.key];
 
-  available.forEach(function(d){
-    const a=document.createElement("a");
-    a.className="doc-row";
-    a.href=fileMap[d.key];
-    a.target="_blank";
-    a.rel="noopener";
-    a.setAttribute("aria-label", d.label+" — "+d.desc);
-    a.innerHTML=
-      '<span class="doc-icon" aria-hidden="true">'+d.icon+'</span>'+
-      '<span class="doc-text"><span class="doc-title">'+d.label+'</span>'+
-      '<span class="doc-desc">'+d.desc+'</span></span>'+
-      '<span class="doc-chevron" aria-hidden="true">'+ICON_CHEVRON+'</span>';
-    list.appendChild(a);
+    if(isAvailable){
+      const a=document.createElement("a");
+      a.className="doc-row";
+      a.href=fileMap[d.key];
+      a.target="_blank";
+      a.rel="noopener";
+      a.setAttribute("aria-label", d.label+" — "+d.desc);
+      a.innerHTML=
+        '<span class="doc-icon" aria-hidden="true">'+d.icon+'</span>'+
+        '<span class="doc-text"><span class="doc-title">'+d.label+'</span>'+
+        '<span class="doc-desc">'+d.desc+'</span></span>'+
+        '<span class="doc-chevron" aria-hidden="true">'+ICON_CHEVRON+'</span>';
+      list.appendChild(a);
+    }else{
+      const row=document.createElement("div");
+      row.className="doc-row pending";
+      row.setAttribute("aria-disabled","true");
+      row.innerHTML=
+        '<span class="doc-icon" aria-hidden="true">'+d.icon+'</span>'+
+        '<span class="doc-text"><span class="doc-title">'+d.label+'</span>'+
+        '<span class="doc-desc doc-soon">Coming soon</span></span>'+
+        '<span class="doc-status" aria-hidden="true">'+ICON_CLOCK+'</span>';
+      list.appendChild(row);
+    }
   });
-
-  if(pending.length){
-    const p=document.createElement("p");
-    p.className="doc-pending";
-    p.innerHTML=
-      '<span class="doc-icon" aria-hidden="true">'+ICON_CLOCK+'</span>'+
-      '<span>'+joinNames(pending.map(function(d){ return d.label; }))+' will appear here as soon as they are ready.</span>';
-    list.appendChild(p);
-  }
 }
 
 /* Calendar-day difference (local midnight to local midnight) — used
-   only to pick which badge-tap message pool feels right (upcoming /
-   tomorrow / today / past). */
+   to pick which celebratory message pool feels right (upcoming /
+   tomorrow / today / past) when verification succeeds. */
 function getDaysRemaining(){
   const now=new Date();
   const startOfToday=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -631,7 +572,7 @@ function getDaysRemaining(){
   return Math.round(diffMs/(1000*60*60*24));
 }
 
-/* The actual live countdown — real time remaining, broken into
+/* The live countdown — real time remaining, broken into
    days / hours / minutes, updated every 20s. Once the date has
    passed, the three tiles are replaced with a single message pill. */
 function updateCountdown(){
@@ -652,7 +593,7 @@ function updateCountdown(){
       wrap.appendChild(donePill);
     }
     donePill.style.display="inline-flex";
-    donePill.textContent=getDaysRemaining()===0 ? "Today's The Day" : "See You In London";
+    donePill.textContent=getDaysRemaining()===0 ? "Today's the day" : "See you in London";
     return;
   }
 
@@ -756,7 +697,7 @@ function resetLookupState(){
   downloads.classList.remove("show");
   document.getElementById("docsList").innerHTML="";
   btn.disabled=false;
-  btn.textContent="Find My Documents";
+  btn.textContent="Access My Documents";
   btn.classList.remove("success-state");
   resetLink.hidden=true;
   inputEl.focus();
@@ -798,16 +739,18 @@ async function searchDoc(event){
 
     if(data.status==="success"){
       msg.className="success";
-      msg.innerHTML="Your personalised convention documents are ready.";
+      msg.innerHTML="You're verified — your documents are ready below.";
 
       const fileMap={f1:data.f1, f2:data.f2, f3:data.f3, f4:data.f4};
       renderDocs(fileMap);
       downloads.classList.add("show");
 
-      btn.textContent="✓ Documents Ready";
+      btn.textContent="✓ Verified";
       btn.classList.add("success-state");
       btn.disabled=true;
       resetLink.hidden=false;
+
+      celebrateSuccess();
     }else{
       btn.disabled=false;
       msg.className="error";
@@ -831,33 +774,32 @@ window.addEventListener("DOMContentLoaded", function(){
   showGeneralPopup();
 });
 
-/* ---- Badge interaction: tapping the party badge fills the whole
-   screen with confetti, gives the badge a playful wiggle, and
-   surfaces a short rotating message. The message pool depends on
-   where "today" sits relative to the convention date. ---- */
+/* ---- One celebratory moment, tied to a real milestone: the instant
+   verification succeeds, not a decorative always-on tap target. A
+   short confetti burst plus a time-aware toast message. ---- */
 const messagesUpcoming=[
-  "🎊 Can't wait to see you in London!",
-  "✨ Big Ben is counting the days too",
-  "🥂 London, we're almost there!",
-  "🎆 See you under the lights!"
+  "Can't wait to see you in London!",
+  "Big Ben is counting the days too.",
+  "London, we're almost there!",
+  "See you under the lights!"
 ];
 const messagesTomorrow=[
-  "🎉 One more sleep till London!",
-  "🧳 Bags packed? Tomorrow's the day!",
-  "✈️ Almost wheels up for London!"
+  "One more sleep till London!",
+  "Bags packed? Tomorrow's the day!",
+  "Almost wheels up for London!"
 ];
 const messagesToday=[
-  "🎆 Today's the day - see you in London!",
-  "🥳 It's happening! London, here we come!",
-  "🕰️ Big Ben's ready - are you?"
+  "Today's the day — see you in London!",
+  "It's happening! London, here we come!",
+  "Big Ben's ready — are you?"
 ];
 const messagesPast=[
-  "🎉 Hope London was unforgettable!",
-  "📸 Thanks for making it a night to remember!",
-  "🥂 Until the next convention - cheers!"
+  "Hope London was unforgettable!",
+  "Thanks for making it a night to remember!",
+  "Until the next convention — cheers!"
 ];
 
-function pickBadgeMessage(){
+function pickMilestoneMessage(){
   const days=getDaysRemaining();
   let pool;
   if(days>1) pool=messagesUpcoming;
@@ -869,16 +811,15 @@ function pickBadgeMessage(){
 
 let toastTimer=null;
 
-/* Fills the entire viewport: pieces start above the top edge at random
+/* Fills the viewport once: pieces start above the top edge at random
    x positions across the full width and fall past the bottom, each on
-   its own staggered delay, so the burst reads as "the whole page" and
-   not just a puff near the badge. */
+   its own staggered delay. */
 function fireConfettiBurst(){
-  const container=document.querySelector(".confetti");
-  const colors=["var(--gold)","#fff","var(--gold-deep)","var(--gold-light)"];
+  const container=document.getElementById("confetti");
+  const colors=["#DDAE4E","#fff","#B8862E","#F3E1B0"];
   const w=window.innerWidth;
   const h=window.innerHeight;
-  const count=40;
+  const count=34;
   for(let i=0;i<count;i++){
     const s=document.createElement("span");
     const startX=Math.random()*w;
@@ -886,7 +827,7 @@ function fireConfettiBurst(){
     const fallDist=h-startY+60+Math.random()*120;
     const drift=(Math.random()*2-1)*140;
     const rot=Math.random()*720-360;
-    const delay=Math.random()*900;
+    const delay=Math.random()*700;
     const size=6+Math.random()*4;
     s.style.position="absolute";
     s.style.left=startX+"px";
@@ -905,7 +846,7 @@ function fireConfettiBurst(){
             {transform:"translate(0,0) rotate(0deg)",opacity:1},
             {transform:"translate("+dx+"px,"+dy+"px) rotate("+r+"deg)",opacity:0}
           ],
-          {duration:3200+Math.random()*1600,easing:"cubic-bezier(.3,.5,.4,1)"}
+          {duration:2800+Math.random()*1400,easing:"cubic-bezier(.3,.5,.4,1)"}
         );
         anim.onfinish=function(){ span.remove(); };
       }, d);
@@ -913,25 +854,13 @@ function fireConfettiBurst(){
   }
 }
 
-function celebrateBadge(e){
-  const badge=e.currentTarget;
+function celebrateSuccess(){
   fireConfettiBurst();
-
-  badge.animate(
-    [
-      {transform:"scale(1) rotate(0deg)"},
-      {transform:"scale(1.3) rotate(-14deg)",offset:.3},
-      {transform:"scale(.92) rotate(10deg)",offset:.6},
-      {transform:"scale(1) rotate(0deg)"}
-    ],
-    {duration:550,easing:"ease-out"}
-  );
-
   const toast=document.getElementById("toast");
-  toast.textContent=pickBadgeMessage();
+  toast.textContent=pickMilestoneMessage();
   toast.classList.add("show");
   clearTimeout(toastTimer);
-  toastTimer=setTimeout(function(){ toast.classList.remove("show"); },1800);
+  toastTimer=setTimeout(function(){ toast.classList.remove("show"); },2200);
 }
 </script>
 </body>
