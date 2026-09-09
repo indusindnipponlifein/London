@@ -66,6 +66,7 @@ body{
   position:fixed;inset:0;z-index:1;pointer-events:none;
   background:
     linear-gradient(180deg, rgba(2,5,9,.22) 0%, rgba(2,5,9,0) 22%, rgba(2,5,9,0) 62%, rgba(2,5,9,.5) 100%);
+  transition:opacity .4s ease;
 }
 
 .sr-only{
@@ -196,6 +197,7 @@ body{
   margin:26px auto 0;max-width:360px;text-align:center;
   box-shadow:0 28px 60px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.1), inset 0 -1px 0 rgba(0,0,0,.25);
   animation:rise .9s .2s ease both;
+  transition:background .45s ease, backdrop-filter .45s ease, border-color .45s ease, box-shadow .45s ease;
 }
 .card::before{
   content:"";position:absolute;top:0;left:14%;right:14%;height:1px;
@@ -296,7 +298,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--gold-light);ou
   color:var(--gold-light);font-weight:600;font-size:13.5px;text-decoration:none;
   border:1px solid rgba(227,181,79,.5);
   box-shadow:0 8px 18px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.12);
-  transition:transform .2s ease, box-shadow .2s ease, background .2s ease, opacity .2s ease, filter .2s ease;
+  transition:transform .2s ease, box-shadow .2s ease, background .2s ease, opacity .2s ease, filter .2s ease, border-color .2s ease;
 }
 .dl-btn:hover, .dl-btn:focus-visible{
   transform:translateY(-2px);
@@ -315,6 +317,30 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--gold-light);ou
 }
 .dl-btn.disabled:hover{transform:none;}
 .dl-btn.disabled .soon-tag{display:block;}
+
+/* ---- Scroll transparency: the poster is a fixed layer, so it never
+   moves — it's the page content that scrolls over it. Once the person
+   scrolls at all (e.g. to reach the download buttons after they
+   appear), the card and buttons thin right out so the poster's own
+   artwork stays visible through them instead of being covered by an
+   opaque panel. Scrolling back up near the top restores the normal
+   frosted look. Toggled by the "is-scrolled" class added in JS. ---- */
+body.is-scrolled .card{
+  background:
+    linear-gradient(165deg, rgba(255,255,255,.04), rgba(255,255,255,.01) 35%, transparent 60%),
+    linear-gradient(180deg, rgba(17,36,60,.16), rgba(6,14,26,.24));
+  backdrop-filter:blur(7px) saturate(150%);
+  -webkit-backdrop-filter:blur(7px) saturate(150%);
+  border-color:rgba(227,181,79,.2);
+  box-shadow:0 18px 40px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.05), inset 0 -1px 0 rgba(0,0,0,.1);
+}
+body.is-scrolled .dl-btn:not(.disabled){
+  background:linear-gradient(135deg, rgba(227,181,79,.14), rgba(184,134,46,.07));
+  border-color:rgba(227,181,79,.26);
+  box-shadow:0 6px 14px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.06);
+}
+body.is-scrolled .dl-btn.disabled{opacity:.3;}
+body.is-scrolled .bg-overlay{opacity:.5;}
 
 /* closing line — a true page footer. margin-top:auto pushes it to the
    bottom of .page's flex column: on short content it sits pinned to
@@ -478,7 +504,7 @@ const CONVENTION_DATE=new Date("2026-11-24T00:00:00");
    ============================================================ */
 const DOC_AVAILABILITY={
   f1:true,
-  f2:true,
+  f2:false,
   f3:false,
   f4:false
 };
@@ -624,6 +650,23 @@ function applyDocAvailability(){
   });
 }
 
+/* Once the page has scrolled even a little (not just a stray pixel),
+   mark <body> so the CSS above can thin out the card and buttons.
+   Scrolling back near the top removes the mark and restores the
+   normal frosted look. rAF-throttled so it costs nothing on scroll. */
+const SCROLL_TRANSPARENCY_THRESHOLD=40;
+let scrollTicking=false;
+function updateScrollState(){
+  document.body.classList.toggle("is-scrolled", window.scrollY>SCROLL_TRANSPARENCY_THRESHOLD);
+  scrollTicking=false;
+}
+window.addEventListener("scroll", function(){
+  if(!scrollTicking){
+    window.requestAnimationFrame(updateScrollState);
+    scrollTicking=true;
+  }
+}, {passive:true});
+
 async function searchDoc(event){
   if(event) event.preventDefault();
 
@@ -687,6 +730,7 @@ window.addEventListener("DOMContentLoaded", function(){
   updateCountdown();
   setInterval(updateCountdown, 20000);
   applyDocAvailability();
+  updateScrollState();
   showGeneralPopup();
 });
 
