@@ -11,14 +11,13 @@
 :root{
   --navy-deep:#0F2A4A;
   --navy-night:#050D1A;
-  --red-signal:#C8102E;
   --red-error:#FF6E7C;
   --ink:#10202E;
   --white:#FFFFFF;
   --success:#3FDC9B;
-  --gold-deep:#B8862E;
-  --gold:#E3B54F;
-  --gold-light:#F6DFA0;
+  --gold-deep:#B8862E;  /* sampled directly from the poster's "2026" shadow tone */
+  --gold:#E3B54F;       /* sampled from the poster's mid-tone gold */
+  --gold-light:#F6DFA0; /* sampled from the poster's highlight gold */
   --font-body:'IBM Plex Sans', -apple-system, 'Segoe UI', sans-serif;
   --font-display:'Cinzel', Georgia, serif;
 
@@ -29,7 +28,7 @@
      replace the url() below with it, e.g.:
      --hero-bg-image: url('https://yourdomain.com/poster.jpg');
      ========================================================== */
-  --hero-bg-image: url('https://iili.io/nF0X6ZB.png');
+  --hero-bg-image: url('https://i.postimg.cc/HWPtczhy/Chat-GPT-Image-Sep-6-2026-01-31-02-AM.png');
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;}
@@ -68,19 +67,19 @@ body{
 .confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:5;}
 .confetti span{position:absolute;top:-8%;width:7px;height:13px;opacity:0;border-radius:1px;animation:confettiFall 3.4s ease-in forwards;}
 @keyframes confettiFall{0%{transform:translateY(0) rotate(0deg);opacity:1;}85%{opacity:1;}100%{transform:translateY(72vh) rotate(340deg);opacity:0;}}
-.confetti span:nth-child(1){left:6%;background:var(--red-signal);animation-delay:.10s;}
+.confetti span:nth-child(1){left:6%;background:var(--gold);animation-delay:.10s;}
 .confetti span:nth-child(2){left:14%;background:var(--white);animation-delay:.50s;}
-.confetti span:nth-child(3){left:22%;background:#9FB3C8;animation-delay:.15s;}
+.confetti span:nth-child(3){left:22%;background:var(--gold-light);animation-delay:.15s;}
 .confetti span:nth-child(4){left:30%;background:var(--white);animation-delay:.65s;}
-.confetti span:nth-child(5){left:38%;background:var(--red-signal);animation-delay:.30s;}
+.confetti span:nth-child(5){left:38%;background:var(--gold-deep);animation-delay:.30s;}
 .confetti span:nth-child(6){left:46%;background:var(--white);animation-delay:.05s;}
-.confetti span:nth-child(7){left:54%;background:#9FB3C8;animation-delay:.45s;}
+.confetti span:nth-child(7){left:54%;background:var(--gold-light);animation-delay:.45s;}
 .confetti span:nth-child(8){left:62%;background:var(--white);animation-delay:.20s;}
-.confetti span:nth-child(9){left:70%;background:var(--red-signal);animation-delay:.55s;}
+.confetti span:nth-child(9){left:70%;background:var(--gold);animation-delay:.55s;}
 .confetti span:nth-child(10){left:78%;background:var(--white);animation-delay:.35s;}
-.confetti span:nth-child(11){left:86%;background:#9FB3C8;animation-delay:.10s;}
+.confetti span:nth-child(11){left:86%;background:var(--gold-deep);animation-delay:.10s;}
 .confetti span:nth-child(12){left:94%;background:var(--white);animation-delay:.50s;}
-.confetti span:nth-child(13){left:50%;background:var(--red-signal);animation-delay:.60s;}
+.confetti span:nth-child(13){left:50%;background:var(--gold);animation-delay:.60s;}
 .confetti span:nth-child(14){left:18%;background:var(--white);animation-delay:.40s;}
 
 /* ---- CONTENT — everything sits in one column over the fixed poster,
@@ -89,24 +88,41 @@ body{
    glass entry card (input, button, results, downloads), and finally
    the closing line — all in the empty sky the poster was designed
    to leave open for exactly this. ---- */
+/* ---- Padding-top is derived from the poster's own measured
+   proportions, not a guessed viewport-height percentage. The poster
+   is 1364×2395px; its "2026" line ends at y≈1065 (44.5% down the
+   image), plus a small breathing gap ≈48.2% down the image.
+   background-size:contain + background-attachment:fixed sizes the
+   image relative to the viewport — and on virtually every phone
+   (viewport narrower/taller than the poster's own 1364:2395 ratio),
+   that sizing is WIDTH-limited: rendered image height = 100vw ×
+   (2395/1364). So the offset must be expressed in vw, not vh:
+   0.482 × (2395/1364) × 100vw ≈ 85vw. On wider/shorter viewports
+   (tablet, desktop, landscape) sizing flips to HEIGHT-limited, so
+   the override below switches the same offset to vh instead. This
+   keeps the countdown pill sitting just under "2026" on any screen,
+   instead of drifting and colliding with it. ---- */
 .page{
   position:relative;z-index:2;
   min-height:100vh;
   display:flex;
   flex-direction:column;
   align-items:center;
-  padding:29vh 24px 48px;
+  padding:85vw 24px 48px;
   text-align:center;
+}
+@media (min-aspect-ratio: 1364/2395){
+  .page{padding-top:48vh;}
 }
 
 .countdown{
-  display:inline-flex;align-items:center;gap:9px;
-  background:linear-gradient(135deg, rgba(200,16,46,.4), rgba(140,14,35,.5));
+  display:inline-flex;align-items:center;gap:10px;
+  background:linear-gradient(135deg, rgba(17,36,60,.62), rgba(6,14,26,.78));
   backdrop-filter:blur(14px) saturate(160%);
   -webkit-backdrop-filter:blur(14px) saturate(160%);
-  color:#fff;font-family:var(--font-display);font-weight:600;font-size:1rem;letter-spacing:.08em;text-transform:uppercase;
-  padding:10px 24px;border-radius:999px;border:1px solid rgba(227,181,79,.5);
-  box-shadow:0 10px 26px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.18);
+  color:var(--gold-light);font-family:var(--font-display);font-weight:600;font-size:.92rem;letter-spacing:.14em;text-transform:uppercase;
+  padding:11px 26px;border-radius:999px;border:1px solid rgba(227,181,79,.55);
+  box-shadow:0 10px 26px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.14);
   animation:rise .7s ease both;
 }
 .countdown::before{
@@ -117,9 +133,25 @@ body{
 
 .subcopy{
   font-family:var(--font-body);font-size:.95rem;line-height:1.6;color:var(--gold-light);
-  max-width:340px;margin:16px auto 0;text-shadow:0 2px 10px rgba(2,5,9,.7);
+  max-width:320px;margin:18px auto 0;text-shadow:0 2px 10px rgba(2,5,9,.7);
   animation:rise .8s .1s ease both;
 }
+
+/* Two typographic motifs lifted straight from the poster itself, so the
+   card reads as a continuation of the artwork rather than a bolted-on
+   app panel: a hairline rule flanking a small gold diamond either side
+   of a short caption (matching "◆ 2026 ◆"), and a plainer rule-flanked
+   caption with no diamonds (matching "— TRAINING CONVENTION —"). */
+.divider-gem, .divider-plain{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  font-family:var(--font-display);text-transform:uppercase;font-weight:600;
+  color:var(--gold-light);
+}
+.divider-gem{font-size:.68rem;letter-spacing:.22em;margin:0 0 18px;opacity:.95;}
+.divider-gem::before,.divider-gem::after{content:"";width:20px;height:1px;background:rgba(227,181,79,.55);}
+.divider-gem .gem{color:var(--gold);font-size:.55rem;}
+.divider-plain{font-size:.8rem;letter-spacing:.16em;}
+.divider-plain::before,.divider-plain::after{content:"";width:26px;height:1px;background:rgba(227,181,79,.55);}
 
 /* the entry card — a frosted glass panel, layered like real glass:
    a faint gradient sheen, blur, a soft gold edge, and a thin
@@ -128,27 +160,27 @@ body{
 .card{
   position:relative;z-index:1;width:100%;
   background:
-    linear-gradient(165deg, rgba(255,255,255,.10), rgba(255,255,255,.02) 35%, transparent 60%),
-    linear-gradient(180deg, rgba(17,36,60,.5), rgba(6,14,26,.72));
+    linear-gradient(165deg, rgba(255,255,255,.09), rgba(255,255,255,.02) 35%, transparent 60%),
+    linear-gradient(180deg, rgba(17,36,60,.48), rgba(6,14,26,.74));
   backdrop-filter:blur(24px) saturate(170%);
   -webkit-backdrop-filter:blur(24px) saturate(170%);
-  border:1px solid rgba(227,181,79,.35);
-  border-radius:24px;
-  padding:30px 26px;
-  margin:22px auto 0;max-width:360px;text-align:center;
+  border:1px solid rgba(227,181,79,.32);
+  border-radius:20px;
+  padding:34px 28px;
+  margin:26px auto 0;max-width:360px;text-align:center;
   box-shadow:0 28px 60px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.1), inset 0 -1px 0 rgba(0,0,0,.25);
   animation:rise .9s .2s ease both;
 }
 .card::before{
   content:"";position:absolute;top:0;left:14%;right:14%;height:1px;
-  background:linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent);
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent);
 }
 .badge{
-  position:absolute;top:-18px;right:-14px;width:52px;height:52px;border-radius:50%;
-  background:linear-gradient(135deg, rgba(200,16,46,.85), rgba(140,14,35,.9));
+  position:absolute;top:-18px;right:-14px;width:50px;height:50px;border-radius:50%;
+  background:linear-gradient(135deg, rgba(17,36,60,.92), rgba(6,14,26,.96));
   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-  border:1.5px solid rgba(227,181,79,.65);display:flex;align-items:center;justify-content:center;
-  font-size:24px;box-shadow:0 8px 20px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.25);
+  border:1.5px solid rgba(227,181,79,.6);display:flex;align-items:center;justify-content:center;
+  font-size:22px;box-shadow:0 8px 20px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.15);
   animation:badgeIn .5s .8s cubic-bezier(.34,1.56,.64,1) both;
   cursor:pointer;appearance:none;-webkit-appearance:none;padding:0;
   transition:transform .15s ease;
@@ -173,8 +205,8 @@ body{
 .toast.show{opacity:1;transform:translate(-50%,0);}
 
 .input-wrap{
-  padding:1.5px;border-radius:14px;margin-bottom:16px;
-  background:linear-gradient(135deg, rgba(227,181,79,.85), rgba(184,134,46,.35), rgba(227,181,79,.85));
+  padding:1px;border-radius:13px;margin-bottom:18px;
+  background:rgba(227,181,79,.5);
 }
 input{
   display:block;width:100%;padding:14px 16px;font-size:16px;font-family:var(--font-body);color:var(--gold-light);
@@ -185,14 +217,15 @@ input{
 }
 input:focus{box-shadow:0 0 0 4px rgba(227,181,79,.22);background:rgba(9,20,35,.72);}
 input::placeholder{color:rgba(246,223,160,.5);}
+input[aria-invalid="true"]{box-shadow:0 0 0 3px rgba(255,110,124,.45);}
 
 button{
   position:relative;overflow:hidden;
-  width:100%;padding:15px;border:1px solid rgba(227,181,79,.55);border-radius:12px;cursor:pointer;
+  width:100%;padding:15px;border:1px solid rgba(227,181,79,.55);border-radius:11px;cursor:pointer;
   background:linear-gradient(135deg, rgba(15,42,74,.92), rgba(5,13,26,.96));
   backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
   color:var(--gold-light);
-  font-family:var(--font-body);font-weight:600;font-size:16px;letter-spacing:.03em;
+  font-family:var(--font-body);font-weight:600;font-size:15px;letter-spacing:.1em;text-transform:uppercase;
   box-shadow:0 14px 30px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.1);
   transition:transform .2s ease, box-shadow .2s ease;
 }
@@ -205,7 +238,7 @@ button:hover::after{left:130%;}
 button:hover{transform:translateY(-2px);box-shadow:0 18px 38px rgba(15,42,74,.5), inset 0 1px 0 rgba(255,255,255,.15);}
 button:active{transform:translateY(0);}
 button:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none;}
-button:focus-visible, input:focus-visible{outline:2px solid var(--red-signal);outline-offset:2px;}
+button:focus-visible, input:focus-visible{outline:2px solid var(--gold-light);outline-offset:2px;}
 
 .loader{
   display:none;margin-top:16px;align-items:center;justify-content:center;gap:8px;
@@ -228,20 +261,21 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--red-signal);ou
 }
 .downloads.show{display:grid;}
 .dl-btn{
-  display:block;text-align:center;padding:13px 8px;border-radius:12px;
-  background:linear-gradient(135deg, rgba(227,181,79,.22), rgba(184,134,46,.12));
+  display:flex;align-items:center;justify-content:center;gap:6px;text-align:center;padding:13px 8px;border-radius:12px;
+  background:linear-gradient(135deg, rgba(227,181,79,.34), rgba(184,134,46,.2));
   backdrop-filter:blur(14px) saturate(160%);
   -webkit-backdrop-filter:blur(14px) saturate(160%);
   color:var(--gold-light);font-weight:600;font-size:13.5px;text-decoration:none;
-  border:1px solid rgba(227,181,79,.4);
+  border:1px solid rgba(227,181,79,.5);
   box-shadow:0 8px 18px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.12);
   transition:transform .2s ease, box-shadow .2s ease, background .2s ease;
 }
-.dl-btn:hover{
+.dl-btn:hover, .dl-btn:focus-visible{
   transform:translateY(-2px);
-  background:linear-gradient(135deg, rgba(227,181,79,.34), rgba(184,134,46,.2));
+  background:linear-gradient(135deg, rgba(227,181,79,.46), rgba(184,134,46,.28));
   box-shadow:0 12px 24px rgba(184,134,46,.3), inset 0 1px 0 rgba(255,255,255,.2);
 }
+.dl-btn svg{flex-shrink:0;width:14px;height:14px;}
 
 /* closing line — a true page footer. margin-top:auto pushes it to the
    bottom of .page's flex column: on short content it sits pinned to
@@ -250,32 +284,38 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--red-signal);ou
    the page, never mid-card. */
 .footer-note{
   margin-top:auto;
-  display:inline-block;
-  padding:11px 26px;
-  background:linear-gradient(135deg, rgba(15,32,54,.4), rgba(6,14,26,.5));
-  backdrop-filter:blur(12px) saturate(150%);
-  -webkit-backdrop-filter:blur(12px) saturate(150%);
-  border:1px solid rgba(227,181,79,.3);
-  border-radius:999px;
-  font-family:var(--font-display);font-size:14px;font-weight:600;letter-spacing:.03em;
-  color:var(--gold-light);
-  box-shadow:0 10px 24px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.1);
+  padding-top:28px;
+  text-shadow:0 2px 10px rgba(2,5,9,.7);
 }
 
 @keyframes rise{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
 
 /* general announcement popup - opens automatically on page load,
-   closed via the Cancel button (or by tapping the dark background) */
+   closed via the Cancel button, the corner ×, backdrop tap, or Escape */
 .popup-overlay{
   display:none;position:fixed;inset:0;z-index:50;align-items:center;justify-content:center;
   background:rgba(2,5,9,.78);padding:20px;
 }
 .popup-overlay.show{display:flex;}
 .popup-box{
+  position:relative;
   background:#fff;border-radius:16px;padding:18px;max-width:480px;width:100%;
   max-height:85vh;display:flex;flex-direction:column;gap:14px;
   box-shadow:0 30px 60px rgba(0,0,0,.5);
 }
+.popup-close{
+  position:absolute;top:-14px;right:-14px;width:34px;height:34px;border-radius:50%;
+  border:1px solid rgba(227,181,79,.65);cursor:pointer;
+  background:linear-gradient(135deg, var(--navy-deep), #08182B);color:var(--gold-light);
+  font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 8px 20px rgba(0,0,0,.4);
+}
+.popup-close:hover{opacity:.9;}
+.popup-loading{
+  display:flex;align-items:center;justify-content:center;gap:8px;padding:40px 0;
+  font-family:var(--font-body);font-size:14px;color:var(--ink);
+}
+.popup-loading .spinner{border-color:rgba(15,42,74,.2);border-top-color:var(--navy-deep);}
 .popup-box iframe{
   width:100%;height:55vh;border:none;border-radius:10px;background:#f2f2f2;
 }
@@ -294,14 +334,9 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--red-signal);ou
 .popup-cancel:hover{opacity:.92;}
 
 @media (max-width:480px){
-  .page{padding-top:27vh;}
   .card{padding:24px 20px;}
   .popup-box iframe{height:48vh;}
   .popup-box img{max-height:55vh;}
-}
-
-@media (max-height:700px){
-  .page{padding-top:22vh;}
 }
 
 @media (prefers-reduced-motion: reduce){
@@ -320,43 +355,68 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--red-signal);ou
 
 <h1 class="sr-only">London Training Convention — November 2026 — IndusInd Nippon Life</h1>
 
-<div class="toast" id="toast" aria-live="polite"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <main class="page">
-  <div class="countdown" id="countdown">Loading countdown...</div>
+  <div class="countdown" id="countdown" role="status">Loading countdown...</div>
   <p class="subcopy">Enter your registered details below to access your personalised convention documents</p>
 
   <section class="card">
     <button type="button" class="badge" id="celebrateBadge" aria-label="Tap for a surprise" onclick="celebrateBadge(event)">🎉</button>
 
-    <div class="input-wrap">
-      <input
-        id="input"
-        placeholder="Employee ID / Mobile No."
-        autocomplete="off"
-      >
-    </div>
-    <button onclick="searchDoc()" id="btn">View my experience!</button>
+    <p class="divider-gem" aria-hidden="true"><span class="gem">◆</span><span>Your Details</span><span class="gem">◆</span></p>
 
-    <div class="loader" id="loader"><span class="spinner"></span><span>Searching...</span></div>
-    <div id="msg"></div>
+    <form id="lookupForm" novalidate>
+      <label for="input" class="sr-only">Employee ID or Mobile Number</label>
+      <div class="input-wrap">
+        <input
+          id="input"
+          name="input"
+          type="text"
+          inputmode="text"
+          autocapitalize="off"
+          spellcheck="false"
+          placeholder="Employee ID / Mobile No."
+          autocomplete="off"
+          aria-describedby="msg"
+        >
+      </div>
+      <button type="submit" id="btn">Find My Documents</button>
+    </form>
+
+    <div class="loader" id="loader" role="status" aria-live="polite"><span class="spinner"></span><span>Searching...</span></div>
+    <div id="msg" role="status" aria-live="polite"></div>
 
     <div class="downloads" id="downloads">
-      <a class="dl-btn" id="dl1" href="#" target="_blank" rel="noopener">CEO's Note</a>
-      <a class="dl-btn" id="dl2" href="#" target="_blank" rel="noopener">Travel Tickets</a>
-      <a class="dl-btn" id="dl3" href="#" target="_blank" rel="noopener">Convention Itinery</a>
-      <a class="dl-btn" id="dl4" href="#" target="_blank" rel="noopener">Accommodation</a>
+      <a class="dl-btn" id="dl1" href="#" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 1.8h5.2L12 4.6v9.6H4z"/><path d="M9.2 1.8v2.8H12"/><path d="M6 8.4h4M6 10.6h4"/></svg>
+        CEO's Note
+      </a>
+      <a class="dl-btn" id="dl2" href="#" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 1.5 1.7 6.4l4.2 1.6"/><path d="M14.5 1.5 9.6 14.3l-3.7-6.3 8.6-6.5z"/></svg>
+        Travel Tickets
+      </a>
+      <a class="dl-btn" id="dl3" href="#" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="12" height="11" rx="1.3"/><path d="M2 6.4h12"/><path d="M5.4 1.6v2.4M10.6 1.6v2.4"/></svg>
+        Itinerary
+      </a>
+      <a class="dl-btn" id="dl4" href="#" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.6 13V4.4"/><path d="M1.6 10.4h12.8v2.6"/><path d="M3.8 10.4V6.8h6.8a1.8 1.8 0 0 1 1.8 1.8v1.8"/></svg>
+        Accommodation
+      </a>
     </div>
   </section>
 
-  <p class="footer-note">🎉 See you in London!</p>
+  <p class="footer-note divider-plain">See You In London</p>
 </main>
 
-<div class="popup-overlay" id="popupOverlay" onclick="if(event.target===this)closePopup()">
+<div class="popup-overlay" id="popupOverlay" role="dialog" aria-modal="true" aria-label="Announcement" onclick="if(event.target===this)closePopup()">
   <div class="popup-box">
+    <button type="button" class="popup-close" onclick="closePopup()" aria-label="Close announcement">✕</button>
+    <div class="popup-loading" id="popupLoading"><span class="spinner"></span><span>Loading announcement...</span></div>
     <img id="popupImage" alt="Announcement" style="display:none;">
-    <iframe id="popupFrame" src="" title="Notice"></iframe>
-    <button class="popup-cancel" onclick="closePopup()">Cancel</button>
+    <iframe id="popupFrame" src="" title="Notice" style="display:none;"></iframe>
+    <button class="popup-cancel" id="popupCancelBtn" onclick="closePopup()">Cancel</button>
   </div>
 </div>
 
@@ -366,10 +426,14 @@ const API_URL="https://script.google.com/macros/s/AKfycbyEda91TPI9tNMYizYfTcgnRp
 // TODO: confirm this against the poster (it currently reads November 2026)
 const CONVENTION_DATE=new Date("2026-11-24T00:00:00");
 
+/* Compares local-midnight-to-local-midnight so the day count doesn't
+   drift by one depending on what time of day the page happens to load. */
 function getDaysRemaining(){
   const now=new Date();
-  const diffMs=CONVENTION_DATE-now;
-  return Math.ceil(diffMs/(1000*60*60*24));
+  const startOfToday=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const startOfTarget=new Date(CONVENTION_DATE.getFullYear(),CONVENTION_DATE.getMonth(),CONVENTION_DATE.getDate());
+  const diffMs=startOfTarget-startOfToday;
+  return Math.round(diffMs/(1000*60*60*24));
 }
 
 function updateCountdown(){
@@ -386,57 +450,98 @@ function updateCountdown(){
   }
 }
 
+let lastFocusedEl=null;
+
 function closePopup(){
   document.getElementById("popupOverlay").classList.remove("show");
   document.getElementById("popupFrame").src="";
   document.getElementById("popupImage").src="";
+  document.removeEventListener("keydown", onPopupKeydown);
+  if(lastFocusedEl && typeof lastFocusedEl.focus==="function"){
+    lastFocusedEl.focus();
+  }
+}
+
+function onPopupKeydown(e){
+  if(e.key==="Escape"){
+    closePopup();
+  }
+}
+
+function openPopup(){
+  lastFocusedEl=document.activeElement;
+  document.getElementById("popupOverlay").classList.add("show");
+  document.addEventListener("keydown", onPopupKeydown);
+  const cancelBtn=document.getElementById("popupCancelBtn");
+  if(cancelBtn) cancelBtn.focus();
 }
 
 /* Announcements can be a plain image (a flyer/banner) or a page/PDF
    link. Images are rendered as <img> with object-fit:contain so the
    whole thing always scales to fit inside the popup at once; anything
-   else falls back to the iframe as before. */
+   else falls back to the iframe as before. A brief loading state
+   covers the gap while the image/page itself is still fetching. */
 function isImageUrl(url){
   return /\.(png|jpe?g|gif|webp|bmp|svg)(\?.*)?$/i.test(url);
 }
 
+/* Announcements only interrupt once per browser session — a returning
+   visitor who already dismissed it isn't forced to see it again every
+   time they reopen the page in the same session. */
+const POPUP_SESSION_KEY="conventionPopupShown";
+
 async function showGeneralPopup(){
+  if(sessionStorage.getItem(POPUP_SESSION_KEY)==="1"){
+    return;
+  }
   try{
     const response=await fetch(API_URL+"?action=popup");
     const data=await response.json();
     if(data.status==="success" && data.popup){
       const img=document.getElementById("popupImage");
       const frame=document.getElementById("popupFrame");
+      const loading=document.getElementById("popupLoading");
+      loading.style.display="flex";
+      img.style.display="none";
+      frame.style.display="none";
+
       if(isImageUrl(data.popup)){
         frame.src="";
-        frame.style.display="none";
-        img.style.display="block";
+        img.onload=function(){ loading.style.display="none"; img.style.display="block"; };
+        img.onerror=function(){ loading.style.display="none"; };
         img.src=data.popup;
       }else{
         img.src="";
-        img.style.display="none";
-        frame.style.display="block";
+        frame.onload=function(){ loading.style.display="none"; frame.style.display="block"; };
         frame.src=data.popup;
       }
-      document.getElementById("popupOverlay").classList.add("show");
+      sessionStorage.setItem(POPUP_SESSION_KEY,"1");
+      openPopup();
     }
   }catch(err){
     // don't block the page if the announcement can't be fetched
   }
 }
 
-async function searchDoc(){
-  const value=document.getElementById("input").value.trim();
+async function searchDoc(event){
+  if(event) event.preventDefault();
+
+  const inputEl=document.getElementById("input");
+  const value=inputEl.value.trim();
   const msg=document.getElementById("msg");
   const loader=document.getElementById("loader");
   const btn=document.getElementById("btn");
   const downloads=document.getElementById("downloads");
+  msg.className="";
   msg.innerHTML="";
   downloads.classList.remove("show");
+  inputEl.removeAttribute("aria-invalid");
 
   if(value===""){
     msg.className="error";
     msg.innerHTML="Please enter your Employee ID or Mobile Number.";
+    inputEl.setAttribute("aria-invalid","true");
+    inputEl.focus();
     return;
   }
 
@@ -461,14 +566,17 @@ async function searchDoc(){
     }else{
       msg.className="error";
       msg.innerHTML=data.message;
+      inputEl.setAttribute("aria-invalid","true");
     }
   }catch(err){
     loader.classList.remove("show");
     btn.disabled=false;
     msg.className="error";
-    msg.innerHTML="Unable to connect to server.";
+    msg.innerHTML="Unable to connect to server. Please check your internet connection and try again.";
   }
 }
+
+document.getElementById("lookupForm").addEventListener("submit", searchDoc);
 
 window.addEventListener("DOMContentLoaded", function(){
   updateCountdown();
@@ -520,7 +628,7 @@ let toastTimer=null;
    not just a puff near the badge. */
 function fireConfettiBurst(){
   const container=document.querySelector(".confetti");
-  const colors=["var(--red-signal)","#fff","#9FB3C8","var(--gold-light)"];
+  const colors=["var(--gold)","#fff","var(--gold-deep)","var(--gold-light)"];
   const w=window.innerWidth;
   const h=window.innerHeight;
   const count=40;
