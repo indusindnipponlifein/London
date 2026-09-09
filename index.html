@@ -119,23 +119,6 @@ body{
 }
 @supports (height:100dvh){ .page{min-height:100dvh;} }
 
-.hero-seal{
-  width:32px;height:32px;margin:0 auto 12px;color:var(--gold);
-  opacity:0;animation:sealIn .55s .05s ease both;
-}
-.hero-seal svg{width:100%;height:100%;display:block;}
-
-/* the first thing a qualified employee reads: short, confident,
-   sitting directly on the poster rather than in an opaque block */
-.hero-welcome{
-  font-family:var(--font-display);font-weight:600;
-  font-size:clamp(1.05rem,3.6vw,1.3rem);line-height:1.4;letter-spacing:.01em;
-  color:var(--gold-light);
-  max-width:290px;margin:0 auto 22px;
-  text-shadow:0 2px 12px rgba(2,5,9,.75);
-  opacity:0;animation:rise .6s .18s ease both;
-}
-
 /* the verification card — a quiet, solid panel rather than a stack of
    glass/gradient/blur layers, so it reads as a real object on the
    poster, not a decorative effect */
@@ -148,7 +131,7 @@ body{
   padding:28px 24px;
   margin:0 auto;max-width:380px;text-align:center;
   box-shadow:0 20px 40px rgba(0,0,0,.4);
-  opacity:0;animation:rise .6s .28s ease both;
+  opacity:0;animation:rise .55s .16s ease both;
 }
 
 .divider-gem{
@@ -270,22 +253,23 @@ a.doc-row:hover, a.doc-row:focus-visible{
 .reset-link:focus-visible{outline:2px solid var(--gold-light);outline-offset:3px;}
 .reset-link[hidden]{display:none;}
 
-/* the countdown — deliberately secondary: quieter and smaller,
-   supporting information rather than the page's first moment */
-.countdown-wrap{margin-top:30px;}
+/* the countdown — now the first thing on the page, so it carries a
+   little more weight than before, while staying a quiet, factual
+   readout rather than a decorated banner */
+.countdown-wrap{margin:0 auto 28px;opacity:0;animation:rise .5s .04s ease both;}
 .countdown-label{
-  font-family:var(--font-display);font-weight:600;font-size:.68rem;letter-spacing:.06em;
-  color:var(--gold-light);opacity:.85;margin-bottom:10px;text-shadow:0 2px 8px rgba(2,5,9,.65);
+  font-family:var(--font-display);font-weight:600;font-size:.72rem;letter-spacing:.06em;
+  color:var(--gold-light);margin-bottom:11px;text-shadow:0 2px 8px rgba(2,5,9,.65);
 }
-.countdown-stats{display:flex;align-items:center;justify-content:center;gap:8px;}
+.countdown-stats{display:flex;align-items:center;justify-content:center;gap:9px;}
 .stat-box{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  width:48px;height:48px;border-radius:11px;
+  width:54px;height:54px;border-radius:12px;
   background:rgba(10,22,38,.55);
   border:1px solid rgba(221,174,78,.4);
 }
 .stat-num{
-  font-family:var(--font-display);font-weight:700;font-size:1.1rem;line-height:1;color:var(--gold-light);
+  font-family:var(--font-display);font-weight:700;font-size:1.25rem;line-height:1;color:var(--gold-light);
   font-variant-numeric:tabular-nums;
 }
 .stat-label{margin-top:4px;font-family:var(--font-body);font-weight:600;font-size:.52rem;letter-spacing:.08em;color:rgba(232,214,166,.72);}
@@ -312,7 +296,6 @@ a.doc-row:hover, a.doc-row:focus-visible{
 }
 
 @keyframes rise{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
-@keyframes sealIn{from{opacity:0;transform:scale(.7);}to{opacity:1;transform:scale(1);}}
 
 /* a small toast, shown once when verification succeeds */
 .toast{
@@ -375,7 +358,8 @@ a.doc-row:hover, a.doc-row:focus-visible{
    gets a little more breathing room. ---- */
 @media (min-width:600px){
   .card{max-width:400px;padding:32px 30px;}
-  .hero-welcome{max-width:340px;font-size:1.3rem;}
+  .stat-box{width:60px;height:60px;}
+  .stat-num{font-size:1.4rem;}
 }
 @media (min-width:1024px){
   .card{max-width:420px;}
@@ -421,13 +405,16 @@ a.doc-row:hover, a.doc-row:focus-visible{
 
 <main class="page">
 
-  <div class="hero-seal" aria-hidden="true">
-    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="16" cy="16" r="13.5"/>
-      <path d="M10.5 16.5 14 20l8-9"/>
-    </svg>
+  <div class="countdown-wrap" id="countdownWrap">
+    <p class="countdown-label" id="countdownLabel">Counting down to London 2026</p>
+    <div class="countdown-stats" id="countdownStats" role="status" aria-live="polite">
+      <div class="stat-box"><span class="stat-num" id="cdDays">--</span><span class="stat-label">Days</span></div>
+      <span class="stat-sep" aria-hidden="true">:</span>
+      <div class="stat-box"><span class="stat-num" id="cdHours">--</span><span class="stat-label">Hrs</span></div>
+      <span class="stat-sep" aria-hidden="true">:</span>
+      <div class="stat-box"><span class="stat-num" id="cdMins">--</span><span class="stat-label">Mins</span></div>
+    </div>
   </div>
-  <p class="hero-welcome">Your seat in London is confirmed.</p>
 
   <section class="card">
     <p class="divider-gem" aria-hidden="true"><span class="gem">◆</span><span>Your Documents</span><span class="gem">◆</span></p>
@@ -458,17 +445,6 @@ a.doc-row:hover, a.doc-row:focus-visible{
 
     <button type="button" class="reset-link" id="resetLink" hidden>Look up a different ID</button>
   </section>
-
-  <div class="countdown-wrap" id="countdownWrap">
-    <p class="countdown-label" id="countdownLabel">Counting down to London 2026</p>
-    <div class="countdown-stats" id="countdownStats" role="status" aria-live="polite">
-      <div class="stat-box"><span class="stat-num" id="cdDays">--</span><span class="stat-label">Days</span></div>
-      <span class="stat-sep" aria-hidden="true">:</span>
-      <div class="stat-box"><span class="stat-num" id="cdHours">--</span><span class="stat-label">Hrs</span></div>
-      <span class="stat-sep" aria-hidden="true">:</span>
-      <div class="stat-box"><span class="stat-num" id="cdMins">--</span><span class="stat-label">Mins</span></div>
-    </div>
-  </div>
 
   <p class="footer-note">See you in London</p>
 </main>
@@ -650,38 +626,67 @@ function isImageUrl(url){
    time they reopen the page in the same session. */
 const POPUP_SESSION_KEY="conventionPopupShown";
 
+/* Loads a popup URL (image or page) into the well. Shared by the
+   real API-driven flow and the manual __previewPopup() helper below,
+   so both exercise exactly the same rendering logic. */
+function renderPopupContent(url){
+  const img=document.getElementById("popupImage");
+  const frame=document.getElementById("popupFrame");
+  const loading=document.getElementById("popupLoading");
+  loading.style.display="flex";
+  img.style.display="none";
+  frame.style.display="none";
+
+  if(isImageUrl(url)){
+    frame.src="";
+    img.onload=function(){ loading.style.display="none"; img.style.display="block"; };
+    img.onerror=function(){ loading.style.display="none"; };
+    img.src=url;
+  }else{
+    img.src="";
+    frame.onload=function(){ loading.style.display="none"; frame.style.display="block"; };
+    frame.src=url;
+  }
+}
+
 async function showGeneralPopup(){
   if(sessionStorage.getItem(POPUP_SESSION_KEY)==="1"){
+    // Announcements only interrupt once per browser session. If you're
+    // testing and the popup won't reappear on refresh, this is almost
+    // always why — run sessionStorage.removeItem("conventionPopupShown")
+    // in the console (or open a private window) and reload.
     return;
   }
   try{
     const response=await fetch(API_URL+"?action=popup");
     const data=await response.json();
-    if(data.status==="success" && data.popup){
-      const img=document.getElementById("popupImage");
-      const frame=document.getElementById("popupFrame");
-      const loading=document.getElementById("popupLoading");
-      loading.style.display="flex";
-      img.style.display="none";
-      frame.style.display="none";
-
-      if(isImageUrl(data.popup)){
-        frame.src="";
-        img.onload=function(){ loading.style.display="none"; img.style.display="block"; };
-        img.onerror=function(){ loading.style.display="none"; };
-        img.src=data.popup;
-      }else{
-        img.src="";
-        frame.onload=function(){ loading.style.display="none"; frame.style.display="block"; };
-        frame.src=data.popup;
-      }
+    // Accept the response as long as it carries a popup URL, rather than
+    // requiring an exact status:"success" match — some Apps Script
+    // responses omit or vary that field for this action.
+    if(data && data.popup){
+      renderPopupContent(data.popup);
       sessionStorage.setItem(POPUP_SESSION_KEY,"1");
       openPopup();
+    }else{
+      console.warn("Announcement popup: API responded with no popup URL.", data);
     }
   }catch(err){
-    // don't block the page if the announcement can't be fetched
+    // Previously silent — now logged, since a swallowed network/CORS/
+    // JSON error here is the most common reason the popup "just doesn't
+    // show". Check the browser console for this message first.
+    console.error("Announcement popup: request to the API failed.", err);
   }
 }
+
+/* Dev-only: trigger the popup UI directly from the browser console,
+   bypassing the API entirely. Useful for confirming the popup itself
+   renders correctly regardless of what the backend is doing:
+     __previewPopup("https://example.com/announcement.jpg")
+*/
+window.__previewPopup=function(url){
+  renderPopupContent(url);
+  openPopup();
+};
 
 function resetLookupState(){
   const inputEl=document.getElementById("input");
